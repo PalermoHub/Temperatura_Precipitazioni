@@ -242,8 +242,12 @@ function quintileBreaks(values) {
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
+const isMobileInit = window.matchMedia('(max-width: 640px)').matches;
+const hasUrlHash = location.hash && location.hash.length > 1;
+
 const map = new maplibregl.Map({
   container: 'map',
+  hash: true,
   style: {
     version: 8,
     sources: {
@@ -266,12 +270,27 @@ const map = new maplibregl.Map({
     },
     layers: [{ id: 'basemap', type: 'raster', source: 'carto-light', layout: { visibility: 'visible' } }],
   },
-  center: [14.15, 37.6],
-  zoom: 7.2,
-  minZoom: 6,
+  center: hasUrlHash ? [14.15, 37.6] : (isMobileInit ? [13.879, 37.655] : [14.15, 37.6]),
+  zoom: hasUrlHash ? 7.2 : (isMobileInit ? 5 : 7.2),
+  minZoom: isMobileInit ? 5 : 6,
   maxZoom: 13,
   attributionControl: { compact: true },
 });
+
+const SICILY_CENTER = [13.9, 37.6];
+function updateMaxBounds() {
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  const bearing = map.getBearing();
+  const pitch = map.getPitch();
+  map.setMaxBounds(null);
+  map.jumpTo({ center: SICILY_CENTER, zoom: map.getMinZoom() });
+  const bounds = map.getBounds();
+  map.jumpTo({ center, zoom, bearing, pitch });
+  map.setMaxBounds(bounds);
+}
+map.on('load', updateMaxBounds);
+window.addEventListener('resize', () => { updateMaxBounds(); });
 
 const brStack = document.getElementById('br-stack');
 const attribCtrl = map.getContainer().querySelector('.maplibregl-ctrl-bottom-right');
@@ -1182,9 +1201,15 @@ function showInfo(p) {
 function togglePanel() {
   document.getElementById('panel').classList.toggle('closed');
   document.body.classList.toggle('panel-closed');
-  setTimeout(() => map.resize(), 360);
+  setTimeout(() => { map.resize(); updateMaxBounds(); }, 360);
 }
 document.getElementById('panel-toggle').addEventListener('click', togglePanel);
+
+if (window.matchMedia('(max-width: 640px)').matches) {
+  document.getElementById('panel').classList.add('closed');
+  document.body.classList.add('panel-closed');
+  map.on('load', () => map.resize());
+}
 
 document.getElementById('btn-reset').addEventListener('click', () => {
   setMode('livello');
