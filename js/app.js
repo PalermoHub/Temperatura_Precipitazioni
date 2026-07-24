@@ -50,7 +50,7 @@ const LABELS = {
   livello: { temp: TEMP_LABELS, precip: PRECIP_LABELS, tempIcon: TEMP_ICON, precipIcon: PRECIP_ICON },
   trend:   { temp: TEMP_LABELS_TR, precip: PRECIP_LABELS_TR, tempIcon: TEMP_ICON_TR, precipIcon: PRECIP_ICON_TR },
 };
-const curLabels = () => LABELS[MODE];
+const curLabels = () => LABELS[MODE === 'confronto' ? 'livello' : MODE];
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
 // luminanza percepita: testo scuro sui toni chiari della rampa, bianco sui toni scuri
 function textOnPal(rgbStr) {
@@ -169,11 +169,14 @@ async function init() {
   buildProvinceSelect();
   buildComuneSelect();
   buildTimeline();
+  buildCompareSelects();
   setPeriod('2025', 'annua');
   setupSearch();
   setupFilterModal();
   setupToolbar();
   setupModeToggle();
+  setupCompareUI();
+  setupCompareDivider();
 
   map.on('load', () => {
     map.addSource('comuni', {
@@ -543,6 +546,10 @@ function setupFilterModal() {
 }
 
 function applyFilters() {
+  if (MODE === 'confronto') {
+    applyCompare();
+    return;
+  }
   applyFeatureState();
   updateStats();
   buildRanking();
@@ -633,6 +640,11 @@ function setupHover() {
   map.on('mousemove', 'comuni-fill', e => {
     if (!e.features.length) return;
     const id = e.features[0].properties.pro_com_t;
+    if (MODE === 'confronto') {
+      canvas.style.cursor = 'pointer';
+      showCompareInfo(id);
+      return;
+    }
     const p = CURRENT_BY_ID[id];
     if (!p) return;
     canvas.style.cursor = 'pointer';
@@ -731,15 +743,22 @@ function setupModeToggle() {
 function setMode(mode) {
   if (mode === MODE) return;
   stopPlay();
+  const prevMode = MODE;
   MODE = mode;
   document.body.classList.toggle('mode-trend', mode === 'trend');
+  document.body.classList.toggle('mode-confronto', mode === 'confronto');
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-  document.getElementById('panel-title').textContent = mode === 'trend' ? 'Trend Temperatura × Precipitazione' : 'Temperatura × Precipitazione';
-  document.getElementById('panel-sub').textContent = mode === 'trend'
-    ? '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)'
-    : '391 comuni di Sicilia — climatologia TerraClimate 1950-2025';
+  document.getElementById('panel-title').textContent =
+    mode === 'trend' ? 'Trend Temperatura × Precipitazione' :
+    mode === 'confronto' ? 'Confronto periodi' : 'Temperatura × Precipitazione';
+  document.getElementById('panel-sub').textContent =
+    mode === 'trend' ? '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)' :
+    mode === 'confronto' ? '391 comuni di Sicilia — confronto tra due periodi climatologici' :
+    '391 comuni di Sicilia — climatologia TerraClimate 1950-2025';
   document.getElementById('s-temp-lbl').textContent = mode === 'trend' ? 'trend temp. °C/decennio' : 'temp. media °C';
   document.getElementById('s-precip-lbl').textContent = mode === 'trend' ? 'trend precip. mm/decennio' : 'precip. media mm';
+
+  if (prevMode === 'confronto' && mode !== 'confronto') exitCompareMode();
 
   buildBivGrid();
 
@@ -752,6 +771,8 @@ function setMode(mode) {
     applyFilters();
     updateFilterUI();
     if (document.getElementById('floating-rank').classList.contains('open')) renderFloatingRank();
+  } else if (mode === 'confronto') {
+    enterCompareMode();
   } else {
     setPeriod(selYear, selMonth);
   }

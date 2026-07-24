@@ -11,7 +11,7 @@
   --hover-tint:  rgba(0,0,0,.05);
   --active-tint: rgba(0,0,0,.09);
   --r:           8px;
-  --panel-w:     314px;
+  --panel-w:     380px;
   --ease-pan:    cubic-bezier(.4,0,.2,1);
 }
 body.dark {
@@ -395,4 +395,50 @@ body.panel-closed #map-timeline { left: 50%; }
 body.mode-trend #map-timeline { display: none; }
 .trend-sig-note { font-size: 10px; color: var(--text2); margin-top: 4px; }
 .trend-nonsig { opacity: .55; }
+
+/* Confronto */
+#map2 {
+  position: absolute; top: 0; left: 0; right: var(--panel-w); bottom: 0;
+  display: none;
+  pointer-events: none;
+}
+body.mode-confronto #map2 { display: block; }
+
+#compare-divider {
+  /* `left` impostato via JS in px assoluti (vedi setupCompareDivider), non in % qui */
+  position: absolute; top: 0; bottom: 0;
+  width: 3px; margin-left: -1.5px;
+  background: #fff; box-shadow: 0 0 4px rgba(0,0,0,.4);
+  cursor: ew-resize; z-index: 5;
+  display: none;
+}
+body.mode-confronto #compare-divider { display: block; }
+
+.compare-chip {
+  position: absolute; top: 64px; padding: 3px 8px; font-size: 10px; font-weight: 600;
+  background: rgba(20,20,20,.75); color: #fff; border-radius: 4px; white-space: nowrap;
+  z-index: 6;
+}
+#compare-chip-a { right: 8px; }
+#compare-chip-b { left: 8px; }
+
+#compare-panel { display: none; }
+body.mode-confronto #compare-panel { display: block; }
+
+.cmp-period-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.cmp-period-row label { width: 62px; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+.cmp-year-pair { display: flex; align-items: center; gap: 4px; }
+.cmp-year-pair select { width: 68px; }
+#cmp-apply {
+  width: 100%; margin-top: 4px; padding: 6px; font-size: 11px; font-weight: 600;
+  background: var(--accent, #3b7dd8); color: #fff; border: none; border-radius: 4px; cursor: pointer;
+}
+#cmp-apply:disabled { opacity: .5; cursor: not-allowed; }
+
+body.mode-confronto #map-timeline { display: none; }
+body.mode-confronto .stats-grid:not(#compare-stats) { display: none; }
+body.mode-confronto #rank-container { display: none; }
+#compare-stats, #compare-rank-container { display: none; }
+body.mode-confronto #compare-stats { display: grid; }
+body.mode-confronto #compare-rank-container { display: block; }
 

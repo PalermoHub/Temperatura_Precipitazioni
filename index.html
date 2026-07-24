@@ -35,6 +35,11 @@
 <body>
 
 <div id="map"></div>
+<div id="map2"></div>
+<div id="compare-divider">
+  <div id="compare-chip-a" class="compare-chip"></div>
+  <div id="compare-chip-b" class="compare-chip"></div>
+</div>
 
 <div id="br-stack">
   <a href="https://opendatasicilia.it/" target="_blank" rel="noopener" title="OpenDataSicilia" id="ods-logo-link">
@@ -158,8 +163,35 @@
       <div id="mode-toggle" class="mode-toggle">
         <button class="mode-btn active" data-mode="livello">Livello</button>
         <button class="mode-btn" data-mode="trend">Trend 1950-2025</button>
+        <button class="mode-btn" data-mode="confronto">Confronto</button>
       </div>
       <p class="biv-hint" id="periodo-hint"></p>
+    </div>
+
+    <div class="fsec" id="compare-panel">
+      <h3>Periodi a confronto</h3>
+      <div class="cmp-period-row">
+        <label>Periodo A</label>
+        <div class="cmp-year-pair">
+          <select id="cmp-a-from"></select>
+          <span>–</span>
+          <select id="cmp-a-to"></select>
+        </div>
+      </div>
+      <div class="cmp-period-row">
+        <label>Periodo B</label>
+        <div class="cmp-year-pair">
+          <select id="cmp-b-from"></select>
+          <span>–</span>
+          <select id="cmp-b-to"></select>
+        </div>
+      </div>
+      <div class="cmp-period-row">
+        <label>Mese</label>
+        <select id="cmp-month"><option value="annua">Annua</option></select>
+      </div>
+      <button id="cmp-apply">Applica confronto</button>
+      <p class="biv-hint" id="cmp-hint"></p>
     </div>
 
     <hr class="sep"/>
@@ -191,11 +223,14 @@
     <div class="fsec">
       <h3>Classifiche</h3>
       <div id="rank-container"></div>
+      <div id="compare-stats" class="stats-grid"></div>
+      <div id="compare-rank-container"></div>
     </div>
 
   </div>
 </div>
 
 <script src="js/app.js?v=9"></script>
+<script src="js/compare.js?v=2"></script>
 </body>
 </html>
