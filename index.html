@@ -80,34 +80,33 @@
   <input type="range" id="tb-opacity" min="0" max="100" value="82" title="Opacità riempimento"/>
   <span id="tb-opacity-val">82</span>
   <div class="tb-sep"></div>
+  <div id="map-timeline">
+    <div class="tl-row">
+      <button class="tl-arrow" id="tl-prev" title="Anno precedente">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <button class="tl-play" id="tl-play" title="Anima anni">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>
+      </button>
+      <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-years"></div></div>
+      <button class="tl-arrow" id="tl-next" title="Anno successivo">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="tl-row tl-row-months">
+      <button class="tl-arrow tl-arrow-sm" id="tl-mese-prev" title="Mese precedente">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-months"></div></div>
+      <button class="tl-arrow tl-arrow-sm" id="tl-mese-next" title="Mese successivo">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="tb-sep"></div>
   <button id="tb-info" title="Informazioni">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
   </button>
-</div>
-
-
-<div id="map-timeline">
-  <div class="tl-row">
-    <button class="tl-arrow" id="tl-prev" title="Anno precedente">
-      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
-    </button>
-    <button class="tl-play" id="tl-play" title="Anima anni">
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>
-    </button>
-    <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-years"></div></div>
-    <button class="tl-arrow" id="tl-next" title="Anno successivo">
-      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
-    </button>
-  </div>
-  <div class="tl-row tl-row-months">
-    <button class="tl-arrow tl-arrow-sm" id="tl-mese-prev" title="Mese precedente">
-      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
-    </button>
-    <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-months"></div></div>
-    <button class="tl-arrow tl-arrow-sm" id="tl-mese-next" title="Mese successivo">
-      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
-    </button>
-  </div>
 </div>
 
 <div id="geo-search-area">

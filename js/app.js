@@ -504,9 +504,9 @@ function syncTimelineUI() {
     el.classList.toggle('active', active);
   });
   const activeYear = document.querySelector('#tl-years .tl-item.active');
-  if (activeYear) activeYear.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (activeYear) activeYear.scrollIntoView({ block: 'center', inline: 'nearest' });
   const activeMonth = document.querySelector('#tl-months .tl-item.active');
-  if (activeMonth) activeMonth.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (activeMonth) activeMonth.scrollIntoView({ block: 'center', inline: 'nearest' });
 }
 
 function setPeriod(year, month) {
@@ -1316,13 +1316,6 @@ function setupToolbar() {
     playTimer = setInterval(() => stepYear(1, true), 1100);
   });
 
-  document.querySelectorAll('.tl-scroll-wrap').forEach(wrap => {
-    wrap.addEventListener('wheel', e => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      wrap.scrollLeft += e.deltaY;
-    }, { passive: false });
-  });
 }
 
 function stepYear(dir, loop) {

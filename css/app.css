@@ -325,14 +325,12 @@ body.panel-closed #geo-search-area { left: 50%; }
 
 /* ── MAP TOOLBAR ─────────────────────────────────────────────────────── */
 #map-toolbar {
-  position: absolute; top: 12px;
-  left: calc(50% - var(--panel-w) / 2); transform: translateX(-50%);
-  z-index: 10; display: flex; align-items: center; gap: 8px;
+  position: fixed; top: 80px; left: 20px;
+  z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 8px;
   background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 28px; padding: 7px 14px; box-shadow: var(--shadow);
-  white-space: nowrap; transition: left .35s var(--ease-pan);
+  border-radius: 28px; padding: 14px 7px; box-shadow: var(--shadow);
+  white-space: nowrap;
 }
-body.panel-closed #map-toolbar { left: 50%; }
 #map-toolbar button {
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
@@ -343,11 +341,12 @@ body.panel-closed #map-toolbar { left: 50%; }
 #map-toolbar button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 #map-toolbar button svg { pointer-events: none; }
 
-.tb-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
+.tb-sep { width: 20px; height: 1px; background: var(--border); flex-shrink: 0; margin: 2px 0; }
 
 #tb-opacity {
-  -webkit-appearance: none; appearance: none; width: 90px; height: 3px;
+  -webkit-appearance: slider-vertical; appearance: none; width: 3px; height: 90px;
   background: var(--border); border-radius: 3px; outline: none; flex-shrink: 0;
+  writing-mode: vertical-lr; direction: rtl;
 }
 #tb-opacity::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none; width: 13px; height: 13px; border-radius: 50%;
@@ -356,19 +355,11 @@ body.panel-closed #map-toolbar { left: 50%; }
 #tb-opacity::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
 #tb-opacity-val { font-size: 10px; font-weight: 700; color: var(--text2); min-width: 22px; text-align: right; flex-shrink: 0; }
 
-/* ── MAP TIMELINE (anno/mese) ───────────────────────────────────────── */
-#map-timeline {
-  position: absolute; top: 66px;
-  left: calc(50% - var(--panel-w) / 2); transform: translateX(-50%);
-  z-index: 10; display: flex; flex-direction: column; gap: 5px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 22px; padding: 6px 10px; box-shadow: var(--shadow);
-  transition: left .35s var(--ease-pan); width: 300px; max-width: 90vw;
-}
-body.panel-closed #map-timeline { left: 50%; }
+/* ── MAP TIMELINE (anno/mese) — integrata nella toolbar verticale ─────── */
+#map-timeline { display: flex; flex-direction: column; gap: 6px; }
 
-.tl-row { display: flex; align-items: center; gap: 6px; }
-.tl-row-months { padding-top: 3px; border-top: 1px solid var(--border); }
+.tl-row { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tl-row-months { padding-top: 6px; border-top: 1px solid var(--border); }
 
 .tl-arrow, .tl-play {
   width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
@@ -376,18 +367,23 @@ body.panel-closed #map-timeline { left: 50%; }
   background: transparent; border: 1px solid var(--border); color: var(--text2);
   cursor: pointer; transition: all .15s;
 }
+.tl-arrow svg { transform: rotate(90deg); }
 .tl-arrow:hover, .tl-play:hover { background: var(--bg3); color: var(--text); }
 .tl-play.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .tl-arrow-sm { width: 18px; height: 18px; }
 
-.tl-scroll-wrap { overflow-x: auto; flex: 1; width: 0; min-width: 0; scrollbar-width: none; scroll-behavior: smooth; }
+.tl-scroll-wrap {
+  overflow-y: auto; overflow-x: hidden; flex-shrink: 0;
+  scrollbar-width: none; scroll-behavior: smooth;
+  max-height: 84px; /* ~3 item da .tl-item (24px + 4px gap) */
+}
+.tl-row-months .tl-scroll-wrap { max-height: 96px; /* ~4 item da .tl-row-months .tl-item */ }
 .tl-scroll-wrap::-webkit-scrollbar { display: none; }
-.tl-scroll { display: flex; gap: 4px; width: max-content; }
-.tl-row-months .tl-scroll-wrap { width: 100%; }
+.tl-scroll { display: flex; flex-direction: column; gap: 4px; height: max-content; }
 .tl-item {
   padding: 4px 9px; border-radius: 12px; font-size: 11px; font-weight: 600;
   color: var(--text2); cursor: pointer; white-space: nowrap; transition: all .15s;
-  border: 1px solid transparent;
+  border: 1px solid transparent; text-align: center;
 }
 .tl-item:hover { background: var(--bg3); color: var(--text); }
 .tl-item.active { background: var(--accent); color: #fff; }
