@@ -73,6 +73,9 @@ function createMap2() {
   const dark = document.body.classList.contains('dark');
   map2 = new maplibregl.Map({
     container: 'map2',
+    pitchWithRotate: false,
+    dragRotate: false,
+    touchPitch: false,
     style: {
       version: 8,
       sources: {

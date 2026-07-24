@@ -248,6 +248,10 @@ const hasUrlHash = location.hash && location.hash.length > 1;
 const map = new maplibregl.Map({
   container: 'map',
   hash: true,
+  pitchWithRotate: false,
+  dragRotate: false,
+  touchPitch: false,
+  maxPitch: 0,
   style: {
     version: 8,
     sources: {
@@ -276,6 +280,8 @@ const map = new maplibregl.Map({
   maxZoom: 13,
   attributionControl: { compact: true },
 });
+map.keyboard.disableRotation();
+map.touchZoomRotate.disableRotation();
 
 const SICILY_CENTER = [13.9, 37.6];
 function updateMaxBounds() {
@@ -847,6 +853,7 @@ async function exportGeoJSON() {
 }
 
 function applyFeatureState() {
+  if (!map.getSource('comuni')) return;
   const feats = map.querySourceFeatures('comuni', { sourceLayer: SOURCE_LAYER });
   feats.forEach(f => {
     const id = f.properties.pro_com_t;
