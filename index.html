@@ -20,7 +20,7 @@
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
 		
-<link rel="stylesheet" href="css/app.css?v=9"/>
+<link rel="stylesheet" href="css/app.css?v=10"/>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
@@ -149,12 +149,16 @@
 <div id="panel">
   <div id="panel-toggle">‹</div>
   <div id="panel-header">
-    <h1>Temperatura × Precipitazione</h1>
-    <p>391 comuni di Sicilia — climatologia TerraClimate 1950-2025</p>
+    <h1 id="panel-title">Temperatura × Precipitazione</h1>
+    <p id="panel-sub">391 comuni di Sicilia — climatologia TerraClimate 1950-2025</p>
   </div>
   <div id="panel-body">
 
     <div class="fsec">
+      <div id="mode-toggle" class="mode-toggle">
+        <button class="mode-btn active" data-mode="livello">Livello</button>
+        <button class="mode-btn" data-mode="trend">Trend 1950-2025</button>
+      </div>
       <p class="biv-hint" id="periodo-hint"></p>
     </div>
 
@@ -176,8 +180,8 @@
       <h3>Statistiche</h3>
       <div class="stats-grid">
         <div class="stat-item"><span class="stat-val" id="s-n">—</span><span class="stat-lbl">comuni mostrati</span></div>
-        <div class="stat-item"><span class="stat-val" id="s-temp">—</span><span class="stat-lbl">temp. media °C</span></div>
-        <div class="stat-item"><span class="stat-val" id="s-precip">—</span><span class="stat-lbl">precip. media mm</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-temp">—</span><span class="stat-lbl" id="s-temp-lbl">temp. media °C</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-precip">—</span><span class="stat-lbl" id="s-precip-lbl">precip. media mm</span></div>
         <div class="stat-item"><span class="stat-val" id="s-prov">—</span><span class="stat-lbl">provincia</span></div>
       </div>
     </div>
@@ -192,6 +196,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=8"></script>
+<script src="js/app.js?v=9"></script>
 </body>
 </html>

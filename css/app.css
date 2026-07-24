@@ -380,3 +380,19 @@ body.panel-closed #map-timeline { left: 50%; }
 .tl-item.tl-clima { border-color: var(--border); font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
 .tl-row-months .tl-item { font-size: 10px; padding: 3px 8px; }
 
+/* ── MODE TOGGLE (Livello / Trend) ─────────────────────────────────────── */
+.mode-toggle {
+  display: flex; gap: 4px; background: var(--bg3); border-radius: var(--r);
+  padding: 3px; margin-bottom: 8px;
+}
+.mode-btn {
+  flex: 1; border: none; background: transparent; color: var(--text2);
+  font-size: 11px; font-weight: 700; padding: 6px 4px; border-radius: 6px;
+  cursor: pointer; transition: all .15s; font-family: inherit;
+}
+.mode-btn:hover { color: var(--text); }
+.mode-btn.active { background: var(--accent); color: #fff; }
+body.mode-trend #map-timeline { display: none; }
+.trend-sig-note { font-size: 10px; color: var(--text2); margin-top: 4px; }
+.trend-nonsig { opacity: .55; }
+

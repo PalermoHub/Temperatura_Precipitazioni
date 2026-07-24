@@ -41,6 +41,16 @@ const TEMP_LABELS = ['', 'molto freddo', 'freddo', 'nella media', 'caldo', 'molt
 const PRECIP_LABELS = ['', 'molto secco', 'secco', 'nella media', 'piovoso', 'molto piovoso'];
 const TEMP_ICON = ['', '🥶', '🌡️', '🌡️', '☀️', '🔥'];
 const PRECIP_ICON = ['', '🏜️', '🏜️', '💧', '🌧️', '🌧️'];
+// Etichette per la modalita' Trend (pendenza OLS 1950-2025, non livello assoluto)
+const TEMP_LABELS_TR = ['', 'riscaldamento debole', 'riscaldamento lieve', 'riscaldamento medio', 'riscaldamento forte', 'riscaldamento molto forte'];
+const PRECIP_LABELS_TR = ['', 'forte calo piogge', 'calo piogge', 'trend stabile', 'aumento piogge', 'forte aumento piogge'];
+const TEMP_ICON_TR = ['', '↗️', '↗️', '⬆️', '🔥', '🔥'];
+const PRECIP_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
+const LABELS = {
+  livello: { temp: TEMP_LABELS, precip: PRECIP_LABELS, tempIcon: TEMP_ICON, precipIcon: PRECIP_ICON },
+  trend:   { temp: TEMP_LABELS_TR, precip: PRECIP_LABELS_TR, tempIcon: TEMP_ICON_TR, precipIcon: PRECIP_ICON_TR },
+};
+const curLabels = () => LABELS[MODE];
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
 // luminanza percepita: testo scuro sui toni chiari della rampa, bianco sui toni scuri
 function textOnPal(rgbStr) {
@@ -61,6 +71,10 @@ let activeBiv = null;
 let activeProv = '';
 let activeComune = '';
 let BREAKS_X = [], BREAKS_Y = []; // 4 soglie quintili, calcolate sui 391 comuni (climatologia)
+let MODE = 'livello';     // 'livello' | 'trend'
+let TREND_STATS = null;   // trend OLS 1950-2025: id, nome, prov, vx(=°C/decennio), vy(=mm/decennio), temp_p, precip_p, temp_sig, precip_sig, biv
+let TREND_BY_ID = {};
+let BREAKS_X_TR = [], BREAKS_Y_TR = [];
 
 const fmt = (v, d = 1) => v == null ? '—' : Number(v).toLocaleString('it-IT', { maximumFractionDigits: d });
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -127,19 +141,29 @@ map.on('load', closeAttrib);
 map.on('resize', closeAttrib);
 
 async function init() {
-  const [cfgRes, statsRes, tsRes] = await Promise.all([
+  const [cfgRes, statsRes, tsRes, trendStatsRes] = await Promise.all([
     fetch('dati/comuni_bivariate_config.json'),
     fetch('dati/comuni_bivariate_stats.json'),
     fetch('dati/comuni_timeseries.json'),
+    fetch('dati/comuni_trend_stats.json'),
   ]);
   CONFIG = await cfgRes.json();
   BASE_STATS = (await statsRes.json()).props;
   TS = await tsRes.json();
+  TREND_STATS = (await trendStatsRes.json()).props;
   BASE_STATS.forEach(p => { BASE_BY_ID[p.id] = p; });
   attachClimaTminTmax();
 
   BREAKS_X = quintileBreaks(BASE_STATS.map(p => p.vx));
   BREAKS_Y = quintileBreaks(BASE_STATS.map(p => p.vy));
+
+  BREAKS_X_TR = quintileBreaks(TREND_STATS.map(p => p.vx));
+  BREAKS_Y_TR = quintileBreaks(TREND_STATS.map(p => p.vy));
+  TREND_STATS.forEach(p => {
+    const cx = classify5(p.vx, BREAKS_X_TR), cy = classify5(p.vy, BREAKS_Y_TR);
+    p.biv = (cx && cy) ? `${cx}-${cy}` : null;
+    TREND_BY_ID[p.id] = p;
+  });
 
   buildBivGrid();
   buildProvinceSelect();
@@ -149,6 +173,7 @@ async function init() {
   setupSearch();
   setupFilterModal();
   setupToolbar();
+  setupModeToggle();
 
   map.on('load', () => {
     map.addSource('comuni', {
@@ -330,12 +355,13 @@ function applyFeatureState() {
 // alto=temp alta+precip alta, sinistra=temp alta+precip bassa, destra=temp bassa+precip alta, basso=entrambe basse.
 function buildBivGrid() {
   const grid = document.getElementById('biv-grid');
+  const { temp: T, precip: P } = curLabels();
   let html = '';
   for (let row = 1; row <= 5; row++) {
     for (let col = 1; col <= 5; col++) {
       const tx = 6 - col, ty = 6 - row;
       const key = `${tx}-${ty}`;
-      const title = `${capitalize(TEMP_LABELS[tx])} e ${PRECIP_LABELS[ty]}`;
+      const title = `${capitalize(T[tx])} e ${P[ty]}`;
       html += `<div class="biv-cell" data-biv="${key}" style="background:${PAL[key]}" title="${title}"></div>`;
     }
   }
@@ -467,8 +493,8 @@ function updateFilterUI() {
 function renderFilterChips() {
   const el = document.getElementById('filter-chips');
   const chips = [];
-  if (selYear !== 'clima') chips.push(['anno', 'Anno', selYear]);
-  if (selYear !== 'clima' && selMonth !== 'annua') chips.push(['mese', 'Mese', MESI[selMonth - 1]]);
+  if (MODE === 'livello' && selYear !== 'clima') chips.push(['anno', 'Anno', selYear]);
+  if (MODE === 'livello' && selYear !== 'clima' && selMonth !== 'annua') chips.push(['mese', 'Mese', MESI[selMonth - 1]]);
   if (activeProv) chips.push(['provincia', 'Provincia', activeProv]);
   if (activeComune) chips.push(['comune', 'Comune', BASE_BY_ID[activeComune]?.nome || activeComune]);
 
@@ -537,9 +563,26 @@ function updateStats() {
   const temps = sub.map(p => p.vx).filter(v => v != null);
   const precs = sub.map(p => p.vy).filter(v => v != null);
   document.getElementById('s-n').textContent = n;
-  document.getElementById('s-temp').textContent = fmt(avg(temps), 1);
-  document.getElementById('s-precip').textContent = fmt(avg(precs), 0);
+  document.getElementById('s-temp').textContent = fmt(avg(temps), MODE === 'trend' ? 2 : 1);
+  document.getElementById('s-precip').textContent = fmt(avg(precs), MODE === 'trend' ? 1 : 0);
   document.getElementById('s-prov').textContent = activeProv || 'Tutte';
+}
+
+function rankSections() {
+  if (MODE === 'trend') {
+    return [
+      ['caldo', '🔥', 'Riscaldamento più forte', '°C/decennio', 'vx', 'desc', RANK_COLORS.caldo, 2],
+      ['freddo', '🥶', 'Riscaldamento più debole', '°C/decennio', 'vx', 'asc', RANK_COLORS.freddo, 2],
+      ['piovoso', '💧', 'Piogge in aumento', 'mm/decennio', 'vy', 'desc', RANK_COLORS.piovoso, 1],
+      ['arido', '🏜️', 'Piogge in calo', 'mm/decennio', 'vy', 'asc', RANK_COLORS.arido, 1],
+    ];
+  }
+  return [
+    ['caldo', '🔥', 'Più caldi', '°C', 'vx', 'desc', RANK_COLORS.caldo, 1],
+    ['freddo', '🥶', 'Più freddi', '°C', 'vx', 'asc', RANK_COLORS.freddo, 1],
+    ['piovoso', '💧', 'Più piovosi', 'mm', 'vy', 'desc', RANK_COLORS.piovoso, 0],
+    ['arido', '🏜️', 'Più aridi', 'mm', 'vy', 'asc', RANK_COLORS.arido, 0],
+  ];
 }
 
 function buildRanking() {
@@ -547,17 +590,17 @@ function buildRanking() {
   const container = document.getElementById('rank-container');
   container.innerHTML = '';
 
-  function section(cat, icon, title, unit, key, dir, color) {
+  function section(cat, icon, title, unit, key, dir, color, dec) {
     const sorted = [...sub].filter(p => p[key] != null).sort((a, b) => dir === 'desc' ? b[key] - a[key] : a[key] - b[key]);
     const top = sorted.slice(0, 5);
     if (!top.length) return '';
     const max = Math.max(...top.map(p => Math.abs(p[key])));
     const rows = top.map((p, i) => `
-      <div class="rank-row" data-id="${esc(p.id)}" title="${esc(p.nome)}: ${fmt(p[key], key === 'vx' ? 1 : 0)} ${unit}">
+      <div class="rank-row" data-id="${esc(p.id)}" title="${esc(p.nome)}: ${fmt(p[key], dec)} ${unit}">
         <span class="rank-num">${i + 1}</span>
         <span class="rank-name">${esc(p.nome)}</span>
         <span class="rank-bar-wrap"><span class="rank-bar" style="width:${max ? (Math.abs(p[key]) / max * 100) : 0}%"></span></span>
-        <span class="rank-val">${fmt(p[key], key === 'vx' ? 1 : 0)}</span>
+        <span class="rank-val">${fmt(p[key], dec)}</span>
       </div>`).join('');
     return `<div class="rank-section" data-cat="${cat}" style="--cat-color:${color}">
       <div class="rank-hdr"><span class="rank-icon">${icon}</span>${title}<span class="rank-hdr-unit">${unit}</span></div>
@@ -565,11 +608,7 @@ function buildRanking() {
     </div>`;
   }
 
-  container.innerHTML =
-    section('caldo', '🔥', 'Più caldi', '°C', 'vx', 'desc', RANK_COLORS.caldo) +
-    section('freddo', '🥶', 'Più freddi', '°C', 'vx', 'asc', RANK_COLORS.freddo) +
-    section('piovoso', '💧', 'Più piovosi', 'mm', 'vy', 'desc', RANK_COLORS.piovoso) +
-    section('arido', '🏜️', 'Più aridi', 'mm', 'vy', 'asc', RANK_COLORS.arido);
+  container.innerHTML = rankSections().map(args => section(...args)).join('');
 
   container.querySelectorAll('.rank-row').forEach(row => {
     row.addEventListener('click', () => flyToComune(row.dataset.id));
@@ -603,6 +642,7 @@ function setupHover() {
 }
 
 function periodLabel() {
+  if (MODE === 'trend') return 'Trend OLS 1950-2025';
   if (selYear === 'clima') return 'Media 1950-2025';
   if (selMonth === 'annua') return `Media annua ${selYear}`;
   return `${MESI[selMonth - 1]} ${selYear}`;
@@ -611,20 +651,32 @@ function periodLabel() {
 function buildClassBlock(biv) {
   if (!biv) return '';
   const [tx, ty] = biv.split('-').map(Number);
+  const { temp: T, precip: P, tempIcon: TI, precipIcon: PI } = curLabels();
   const color = PAL[biv] || '#888';
-  const phrase = `${TEMP_ICON[tx]} ${capitalize(TEMP_LABELS[tx])} e ${PRECIP_ICON[ty]} ${PRECIP_LABELS[ty]}`;
+  const phrase = `${TI[tx]} ${capitalize(T[tx])} e ${PI[ty]} ${P[ty]}`;
+  const desc = MODE === 'trend' ? 'pendenza OLS 1950-2025, quintili sui 391 comuni' : 'rispetto alla media 1950-2025 di questo comune';
   return `<div class="cls-badge" style="background:${color};color:${textOnPal(color)}">${phrase}</div>`
-    + `<div class="cls-desc">rispetto alla media 1950-2025 di questo comune</div>`;
+    + `<div class="cls-desc">${desc}</div>`;
 }
 
 function showInfo(p) {
   document.getElementById('i-title').innerHTML = `${esc(p.nome)} · ${esc(p.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">${esc(periodLabel())}</span>`;
-  document.getElementById('i-table').innerHTML = [
-    ['Temperatura media', fmt(p.vx, 1) + ' °C'],
-    ['Temperatura max', fmt(p.tmax, 1) + ' °C'],
-    ['Temperatura min', fmt(p.tmin, 1) + ' °C'],
-    ['Precipitazione', fmt(p.vy, 0) + ' mm'],
-  ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  if (MODE === 'trend') {
+    const sigTxt = sig => sig === true ? 'significativo (p<0.05)' : sig === false ? 'non significativo' : '—';
+    document.getElementById('i-table').innerHTML = [
+      ['Trend temperatura', fmt(p.vx, 2) + ' °C/decennio'],
+      ['Significatività temp.', sigTxt(p.temp_sig)],
+      ['Trend precipitazione', fmt(p.vy, 1) + ' mm/decennio'],
+      ['Significatività precip.', sigTxt(p.precip_sig)],
+    ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  } else {
+    document.getElementById('i-table').innerHTML = [
+      ['Temperatura media', fmt(p.vx, 1) + ' °C'],
+      ['Temperatura max', fmt(p.tmax, 1) + ' °C'],
+      ['Temperatura min', fmt(p.tmin, 1) + ' °C'],
+      ['Precipitazione', fmt(p.vy, 0) + ' mm'],
+    ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);
   document.getElementById('info').style.display = 'block';
 }
@@ -637,6 +689,7 @@ function togglePanel() {
 document.getElementById('panel-toggle').addEventListener('click', togglePanel);
 
 document.getElementById('btn-reset').addEventListener('click', () => {
+  setMode('livello');
   activeBiv = null; activeProv = ''; activeComune = '';
   document.getElementById('sel-provincia').value = '';
   buildComuneSelect();
@@ -654,13 +707,54 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 function renderFloatingRank() {
   const sub = currentSubset();
   const box = document.getElementById('floating-rank');
-  function top3(key, dir, unit) {
+  function top3(key, dir, unit, dec) {
     const sorted = [...sub].filter(p => p[key] != null).sort((a, b) => dir === 'desc' ? b[key] - a[key] : a[key] - b[key]).slice(0, 3);
-    return sorted.map(p => `<div class="fr-row"><span>${esc(p.nome)}</span><span>${fmt(p[key], key === 'vx' ? 1 : 0)} ${unit}</span></div>`).join('');
+    return sorted.map(p => `<div class="fr-row"><span>${esc(p.nome)}</span><span>${fmt(p[key], dec)} ${unit}</span></div>`).join('');
   }
-  box.innerHTML =
-    `<h4>Più caldi</h4>${top3('vx', 'desc', '°C')}` +
-    `<h4>Più piovosi</h4>${top3('vy', 'desc', 'mm')}`;
+  if (MODE === 'trend') {
+    box.innerHTML =
+      `<h4>Riscaldamento più forte</h4>${top3('vx', 'desc', '°C/decennio', 2)}` +
+      `<h4>Piogge in aumento</h4>${top3('vy', 'desc', 'mm/decennio', 1)}`;
+  } else {
+    box.innerHTML =
+      `<h4>Più caldi</h4>${top3('vx', 'desc', '°C', 1)}` +
+      `<h4>Più piovosi</h4>${top3('vy', 'desc', 'mm', 0)}`;
+  }
+}
+
+function setupModeToggle() {
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+}
+
+function setMode(mode) {
+  if (mode === MODE) return;
+  stopPlay();
+  MODE = mode;
+  document.body.classList.toggle('mode-trend', mode === 'trend');
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('panel-title').textContent = mode === 'trend' ? 'Trend Temperatura × Precipitazione' : 'Temperatura × Precipitazione';
+  document.getElementById('panel-sub').textContent = mode === 'trend'
+    ? '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)'
+    : '391 comuni di Sicilia — climatologia TerraClimate 1950-2025';
+  document.getElementById('s-temp-lbl').textContent = mode === 'trend' ? 'trend temp. °C/decennio' : 'temp. media °C';
+  document.getElementById('s-precip-lbl').textContent = mode === 'trend' ? 'trend precip. mm/decennio' : 'precip. media mm';
+
+  buildBivGrid();
+
+  if (mode === 'trend') {
+    CURRENT = TREND_STATS;
+    CURRENT_BY_ID = TREND_BY_ID;
+    document.getElementById('periodo-hint').textContent =
+      'Trend OLS 1950-2025: pendenza della retta di regressione su 76 medie annuali per comune. Il riscaldamento è significativo (p<0.05) in tutti i comuni; il trend delle piogge è quasi ovunque non significativo — vedi popup per il dettaglio statistico.';
+    syncTimelineUI();
+    applyFilters();
+    updateFilterUI();
+    if (document.getElementById('floating-rank').classList.contains('open')) renderFloatingRank();
+  } else {
+    setPeriod(selYear, selMonth);
+  }
 }
 
 function stopPlay() {

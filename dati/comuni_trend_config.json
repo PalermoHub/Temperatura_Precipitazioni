@@ -1,0 +1,11 @@
+{
+  "map_id": "comuni_trend",
+  "title": "Trend Temperatura °C/decennio × Trend Precipitazione mm/decennio · Comuni di Sicilia",
+  "label_x": "Trend temperatura",
+  "label_y": "Trend precipitazione",
+  "unit_x": "°C/decennio",
+  "unit_y": "mm/decennio",
+  "periodo": "OLS su serie annuale TerraClimate 1950-2025 (76 punti/comune)",
+  "fonte": "climatologylab.org (TerraClimate) + confini gbvitrano.it/anncus",
+  "stats_file": "dati/comuni_trend_stats.json"
+}
