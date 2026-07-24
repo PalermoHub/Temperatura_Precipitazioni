@@ -1,0 +1,32 @@
+{
+  "map_id": "comuni_bivariate",
+  "title": "Temperatura media °C × Precipitazione media mm/anno · Comuni di Sicilia",
+  "label_x": "Temperatura media °C",
+  "label_y": "Precipitazione media mm/anno",
+  "unit_x": "°C",
+  "unit_y": "mm",
+  "breaks_x": [
+    15.72,
+    17.13
+  ],
+  "breaks_y": [
+    510.19,
+    573.13
+  ],
+  "province": [
+    "Agrigento",
+    "Caltanissetta",
+    "Catania",
+    "Enna",
+    "Messina",
+    "Palermo",
+    "Ragusa",
+    "Siracusa",
+    "Trapani"
+  ],
+  "pmtiles": "pmtiles://dati/geo/comuni_bivariate.pmtiles",
+  "source_layer": "comuni",
+  "stats_file": "dati/comuni_bivariate_stats.json",
+  "periodo": "TerraClimate 1950-2025 (climatologia)",
+  "fonte": "climatologylab.org (TerraClimate) + confini gbvitrano.it/anncus"
+}

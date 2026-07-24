@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mappa Bivariata Temperatura e Precipitazioni Sicilia 1950-2025 | Comuni | OpenDataSicilia</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+      integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
+        integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"
+        integrity="sha384-QfbOCebHNw8pQiPAOd2IFee2v2A5VYZxBk0+JGZ5H+3mfzVIp6zsQNkTsfGJot93" crossorigin="anonymous"></script>
+		
+    <meta name="description" content="Mappa bivariata interattiva di temperatura e precipitazioni per i 391 comuni della Sicilia, dati TerraClimate 1950-2025 mese per mese. Confronta clima caldo/freddo e secco/piovoso comune per comune.">
+    <meta name="keywords" content="Sicilia, clima, temperatura, precipitazioni, mappa bivariata, comuni sicilia, TerraClimate, dati climatici, cambiamento climatico, Open Data, OpenDataSicilia">
+    <meta name="author" content="Giovan Battista Vitrano per OpenDataSicilia.it">
+    <meta http-equiv="content-language" content="IT">
+    <meta name="robots" content="index,follow">
+    <meta name="creation_Date" content="24/07/2026">
+    <link rel="shortcut icon" href="img/favicon.ico"/>
+    <link rel="icon" href="img/favicon.png" type="image/png"/>		
+		
+<link rel="stylesheet" href="css/app.css?v=9"/>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-87653723-4');
+    </script>
+
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="br-stack">
+  <a href="https://opendatasicilia.it/" target="_blank" rel="noopener" title="OpenDataSicilia" id="ods-logo-link">
+    <img src="img/opendatasicilia.png" alt="OpenDataSicilia" id="ods-logo"/>
+  </a>
+</div>
+
+<div id="map-toolbar">
+  <button id="tb-home" title="Vista Sicilia">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>
+  </button>
+  <button id="tb-panel" title="Mostra/Nascondi pannello">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/><path d="M3 5l7 7-7 7"/></svg>
+  </button>
+  <button id="tb-biv" class="active" title="Mostra/nascondi colori bivariati">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4z"/><circle cx="12" cy="18" r="2.6" fill="currentColor" stroke="none"/><path d="M12 8v7"/></svg>
+  </button>
+  <button id="tb-borders" class="active" title="Mostra/nascondi confini comuni">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5h17M3.5 15.5h17M9.5 3.5v17M15.5 3.5v17"/></svg>
+  </button>
+  <button id="tb-rank" title="Classifiche rapide">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-7 4 14 2.5-9H21"/></svg>
+  </button>
+  <button id="tb-fullscreen" title="Schermo intero">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+  </button>
+  <button id="tb-theme" title="Tema chiaro/scuro">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+  </button>
+  <div class="tb-sep"></div>
+  <input type="range" id="tb-opacity" min="0" max="100" value="82" title="Opacità riempimento"/>
+  <span id="tb-opacity-val">82</span>
+</div>
+
+<div id="floating-rank"></div>
+
+<div id="map-timeline">
+  <div class="tl-row">
+    <button class="tl-arrow" id="tl-prev" title="Anno precedente">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+    </button>
+    <button class="tl-play" id="tl-play" title="Anima anni">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>
+    </button>
+    <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-years"></div></div>
+    <button class="tl-arrow" id="tl-next" title="Anno successivo">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+  <div class="tl-row tl-row-months">
+    <button class="tl-arrow tl-arrow-sm" id="tl-mese-prev" title="Mese precedente">
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+    </button>
+    <div class="tl-scroll-wrap"><div class="tl-scroll" id="tl-months"></div></div>
+    <button class="tl-arrow tl-arrow-sm" id="tl-mese-next" title="Mese successivo">
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="geo-search-area">
+  <div id="filter-chips"></div>
+  <div id="geo-searchbar">
+    <span class="gs-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+        <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+    </span>
+    <input type="text" id="search-comune" placeholder="Cerca comune…" autocomplete="off"/>
+    <button id="search-clear" style="display:none">&#x2715;</button>
+    <div class="gs-sep"></div>
+    <button id="filter-btn" title="Filtri">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+      </svg>
+      <span id="filter-badge" style="display:none"></span>
+    </button>
+    <div id="search-dd" class="anncus-search-dd"></div>
+  </div>
+</div>
+
+<div id="filter-overlay"></div>
+<div id="filter-modal">
+  <div class="pfm-header">
+    <h3>Filtri geografici</h3>
+    <button id="pfm-close">&#x2715;</button>
+  </div>
+  <div class="pfm-group">
+    <label>Provincia</label>
+    <div class="filter-group">
+      <select id="sel-provincia"><option value="">Tutte le province</option></select>
+    </div>
+  </div>
+  <div class="pfm-group">
+    <label>Comune</label>
+    <div class="filter-group">
+      <select id="sel-comune"><option value="">Tutti i comuni</option></select>
+    </div>
+  </div>
+  <div class="pfm-footer">
+    <button id="btn-reset" class="pfm-reset">Ripristina</button>
+    <button id="pfm-apply">Applica</button>
+  </div>
+</div>
+
+<div id="info">
+  <h3 id="i-title"></h3>
+  <table id="i-table"></table>
+  <div id="i-class"></div>
+</div>
+
+<div id="panel">
+  <div id="panel-toggle">‹</div>
+  <div id="panel-header">
+    <h1>Temperatura × Precipitazione</h1>
+    <p>391 comuni di Sicilia — climatologia TerraClimate 1950-2025</p>
+  </div>
+  <div id="panel-body">
+
+    <div class="fsec">
+      <p class="biv-hint" id="periodo-hint"></p>
+    </div>
+
+    <hr class="sep"/>
+
+    <div class="fsec">
+      <h3>Mappa bivariata</h3>
+      <div class="biv-diamond-wrap">
+        <div class="biv-diamond" id="biv-grid"></div>
+        <div class="biv-diag-lbl biv-diag-lbl-x">← Temperatura</div>
+        <div class="biv-diag-lbl biv-diag-lbl-y">Precipitazione →</div>
+      </div>
+      <p class="biv-hint">Clic su una cella per isolare la classe. Quintili su tutti i 391 comuni.</p>
+    </div>
+
+    <hr class="sep"/>
+
+    <div class="fsec">
+      <h3>Statistiche</h3>
+      <div class="stats-grid">
+        <div class="stat-item"><span class="stat-val" id="s-n">—</span><span class="stat-lbl">comuni mostrati</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-temp">—</span><span class="stat-lbl">temp. media °C</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-precip">—</span><span class="stat-lbl">precip. media mm</span></div>
+        <div class="stat-item"><span class="stat-val" id="s-prov">—</span><span class="stat-lbl">provincia</span></div>
+      </div>
+    </div>
+
+    <hr class="sep"/>
+
+    <div class="fsec">
+      <h3>Classifiche</h3>
+      <div id="rank-container"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/app.js?v=8"></script>
+</body>
+</html>
