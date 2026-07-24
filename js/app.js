@@ -473,6 +473,16 @@ async function init() {
       filter: ['==', ['get', 'pro_com_t'], ''],
       paint: { 'line-color': '#ff9900', 'line-width': 3 },
     });
+    map.addLayer({
+      id: 'comuni-hover-halo', type: 'line', source: 'comuni', 'source-layer': SOURCE_LAYER,
+      filter: ['==', ['get', 'pro_com_t'], ''],
+      paint: { 'line-color': '#000000', 'line-width': 4.5, 'line-opacity': 0.55 },
+    });
+    map.addLayer({
+      id: 'comuni-hover', type: 'line', source: 'comuni', 'source-layer': SOURCE_LAYER,
+      filter: ['==', ['get', 'pro_com_t'], ''],
+      paint: { 'line-color': '#ffffff', 'line-width': 2 },
+    });
 
     map.on('sourcedata', e => {
       if (e.sourceId === 'comuni' && e.isSourceLoaded) applyFeatureState();
@@ -1140,9 +1150,16 @@ function flyToComune(id) {
 function setupHover() {
   const canvas = map.getCanvas();
   const infoEl = document.getElementById('info');
+  let hoveredId = null;
   map.on('mousemove', 'comuni-fill', e => {
     if (!e.features.length) return;
     const id = e.features[0].properties.pro_com_t;
+    if (id !== hoveredId) {
+      hoveredId = id;
+      const f = ['==', ['get', 'pro_com_t'], id];
+      map.setFilter('comuni-hover', f);
+      map.setFilter('comuni-hover-halo', f);
+    }
     if (MODE === 'confronto') {
       canvas.style.cursor = 'pointer';
       showCompareInfo(id);
@@ -1153,7 +1170,13 @@ function setupHover() {
     canvas.style.cursor = 'pointer';
     showInfo(p);
   });
-  map.on('mouseleave', 'comuni-fill', () => { canvas.style.cursor = ''; infoEl.style.display = 'none'; });
+  map.on('mouseleave', 'comuni-fill', () => {
+    canvas.style.cursor = '';
+    infoEl.style.display = 'none';
+    hoveredId = null;
+    map.setFilter('comuni-hover', ['==', ['get', 'pro_com_t'], '']);
+    map.setFilter('comuni-hover-halo', ['==', ['get', 'pro_com_t'], '']);
+  });
 }
 
 function periodLabel() {
