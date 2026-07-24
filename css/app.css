@@ -297,6 +297,30 @@ body.panel-closed #geo-search-area { left: 50%; }
 .pfm-reset { flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: 5px; background: none; color: var(--text); font-size: 11px; cursor: pointer; font-family: inherit; }
 .pfm-reset:hover { border-color: #f06060; color: #f06060; }
 #pfm-apply { flex: 1.4; padding: 9px; border: none; border-radius: 5px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* ── TABLE MODAL (dati/export) ───────────────────────────────────────── */
+#table-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1700; }
+#table-overlay.open { display: block; }
+#table-modal {
+  display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r);
+  box-shadow: var(--shadow); z-index: 1800; width: 760px; max-width: 94vw;
+  max-height: 88vh; flex-direction: column; font-family: inherit;
+}
+#table-modal.open { display: flex; }
+.tbm-filters { display: flex; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.tbm-filter-item { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text); }
+.tbm-filter-item select { padding: 5px 7px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg2); color: var(--text); font-family: inherit; font-size: 11px; }
+.tbm-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text); }
+.tbm-export { display: flex; gap: 8px; }
+.tbm-export button, #tbm-prev, #tbm-next { padding: 6px 10px; border: 1px solid var(--border); border-radius: 5px; background: none; color: var(--text); font-size: 11px; cursor: pointer; font-family: inherit; }
+.tbm-export button:hover, #tbm-prev:hover, #tbm-next:hover { border-color: #4f83a6; color: #4f83a6; }
+.tbm-table-wrap { overflow: auto; flex: 1; padding: 0 14px; }
+.tbm-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tbm-table th, .tbm-table td { padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tbm-table th { position: sticky; top: 0; background: var(--bg2); font-weight: 700; }
+.tbm-row-selected { background: rgba(79,131,166,0.12); }
+.tbm-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text); }
 #pfm-apply:hover { filter: brightness(1.1); }
 
 /* ── MAP TOOLBAR ─────────────────────────────────────────────────────── */
@@ -331,22 +355,6 @@ body.panel-closed #map-toolbar { left: 50%; }
 }
 #tb-opacity::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
 #tb-opacity-val { font-size: 10px; font-weight: 700; color: var(--text2); min-width: 22px; text-align: right; flex-shrink: 0; }
-
-/* ── FLOATING RANK ───────────────────────────────────────────────────── */
-#floating-rank {
-  position: absolute; top: 148px;
-  left: calc(50% - var(--panel-w) / 2); transform: translateX(-50%);
-  z-index: 9; display: none;
-  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r);
-  box-shadow: var(--shadow); padding: 10px 12px; width: 240px;
-  transition: left .35s var(--ease-pan);
-}
-body.panel-closed #floating-rank { left: 50%; }
-#floating-rank.open { display: block; }
-#floating-rank h4 { font-size: 9px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin: 6px 0 4px; }
-#floating-rank h4:first-child { margin-top: 0; }
-#floating-rank .fr-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text); padding: 1px 0; }
-#floating-rank .fr-row span:last-child { font-weight: 700; color: var(--text2); }
 
 /* ── MAP TIMELINE (anno/mese) ───────────────────────────────────────── */
 #map-timeline {

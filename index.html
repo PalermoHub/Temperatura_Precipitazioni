@@ -22,7 +22,7 @@
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
 		
-<link rel="stylesheet" href="css/app.css?v=13"/>
+<link rel="stylesheet" href="css/app.css?v=14"/>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
@@ -53,17 +53,8 @@
   <button id="tb-home" title="Vista Sicilia">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>
   </button>
-  <button id="tb-panel" title="Mostra/Nascondi pannello">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/><path d="M3 5l7 7-7 7"/></svg>
-  </button>
-  <button id="tb-biv" class="active" title="Mostra/nascondi colori bivariati">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4z"/><circle cx="12" cy="18" r="2.6" fill="currentColor" stroke="none"/><path d="M12 8v7"/></svg>
-  </button>
-  <button id="tb-borders" class="active" title="Mostra/nascondi confini comuni">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9.5h17M3.5 15.5h17M9.5 3.5v17M15.5 3.5v17"/></svg>
-  </button>
-  <button id="tb-rank" title="Classifiche rapide">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-7 4 14 2.5-9H21"/></svg>
+  <button id="tb-table" title="Tabella dati ed export">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg>
   </button>
   <button id="tb-fullscreen" title="Schermo intero">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
@@ -76,7 +67,6 @@
   <span id="tb-opacity-val">82</span>
 </div>
 
-<div id="floating-rank"></div>
 
 <div id="map-timeline">
   <div class="tl-row">
@@ -144,6 +134,50 @@
   <div class="pfm-footer">
     <button id="btn-reset" class="pfm-reset">Ripristina</button>
     <button id="pfm-apply">Applica</button>
+  </div>
+</div>
+
+<div id="table-overlay"></div>
+<div id="table-modal">
+  <div class="pfm-header">
+    <h3>Tabella dati</h3>
+    <button id="tbm-close">&#x2715;</button>
+  </div>
+  <div class="tbm-filters">
+    <div class="tbm-filter-item">
+      <label>Anno</label>
+      <select id="tbm-anno"></select>
+    </div>
+    <div class="tbm-filter-item">
+      <label>Mese</label>
+      <select id="tbm-mese"><option value="">Tutti i mesi</option></select>
+    </div>
+    <div class="tbm-filter-item">
+      <label>Provincia</label>
+      <select id="tbm-provincia"><option value="">Tutte le province</option></select>
+    </div>
+    <div class="tbm-filter-item">
+      <label>Comune</label>
+      <select id="tbm-comune"><option value="">Tutti i comuni</option></select>
+    </div>
+  </div>
+  <div class="tbm-toolbar">
+    <span id="tbm-count">0 righe</span>
+    <div class="tbm-export">
+      <button id="tbm-csv">Scarica CSV</button>
+      <button id="tbm-geojson">Scarica GeoJSON</button>
+    </div>
+  </div>
+  <div class="tbm-table-wrap">
+    <table class="tbm-table">
+      <thead id="tbm-thead"></thead>
+      <tbody id="tbm-tbody"></tbody>
+    </table>
+  </div>
+  <div class="tbm-pagination">
+    <button id="tbm-prev">&#8249; Precedente</button>
+    <span id="tbm-page-info">Pagina 1 di 1</span>
+    <button id="tbm-next">Successiva &#8250;</button>
   </div>
 </div>
 
@@ -243,7 +277,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=12"></script>
+<script src="js/app.js?v=15"></script>
 <script src="js/compare.js?v=4"></script>
 </body>
 </html>

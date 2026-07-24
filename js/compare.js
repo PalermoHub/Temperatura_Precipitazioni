@@ -120,6 +120,7 @@ function createMap2() {
     map2.addLayer({
       id: 'comuni-border', type: 'line', source: 'comuni', 'source-layer': SOURCE_LAYER,
       filter: ['==', ['get', 'cod_reg'], 19],
+      layout: { visibility: 'none' },
       paint: { 'line-color': 'rgba(0,0,0,0.28)', 'line-width': 0.6 },
     });
     map2.on('sourcedata', e => {
