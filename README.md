@@ -139,3 +139,11 @@ index.html       markup pagina
 Python con: `xarray`, `netCDF4`, `geopandas`, `rasterio`, `rioxarray`, `rasterstats`, `numpy`, `scipy`, `pandas`.
 
 Eseguire gli script in `scripts/` nell'ordine indicato al punto 2 (download → confini → zonal stats → bivariata → serie storica → trend).
+
+## 5. Licenza
+
+Questo progetto è distribuito con licenza [Creative Commons Attribuzione 4.0 Internazionale (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.it).
+
+Sei libero di condividere e adattare il materiale per qualsiasi uso, anche commerciale, purché venga data adeguata attribuzione a OpenDataSicilia.it. Vedi il file [LICENSE](LICENSE) per il testo completo.
+
+Dati climatici grezzi: TerraClimate (University of Idaho, climatologylab.org). Confini amministrativi: ISTAT.
