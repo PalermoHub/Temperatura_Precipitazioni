@@ -22,7 +22,7 @@
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
 		
-<link rel="stylesheet" href="css/app.css?v=14"/>
+<link rel="stylesheet" href="css/app.css?v=15"/>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
@@ -65,6 +65,10 @@
   <div class="tb-sep"></div>
   <input type="range" id="tb-opacity" min="0" max="100" value="82" title="Opacità riempimento"/>
   <span id="tb-opacity-val">82</span>
+  <div class="tb-sep"></div>
+  <button id="tb-info" title="Informazioni">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+  </button>
 </div>
 
 
@@ -277,7 +281,114 @@
   </div>
 </div>
 
-<script src="js/app.js?v=15"></script>
+<div id="info-overlay"></div>
+<div id="info-wrap">
+  <div id="info-modal" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+    <div class="pfm-header">
+      <h3 id="info-modal-title">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+        Informazioni
+      </h3>
+      <button id="info-close" aria-label="Chiudi">&#x2715;</button>
+    </div>
+    <div class="info-tabbar">
+      <button class="info-tab active" data-itab="analisi">Analisi</button>
+      <button class="info-tab" data-itab="guida">Guida</button>
+      <button class="info-tab" data-itab="credits">Credits</button>
+    </div>
+
+    <div class="info-panel active" id="itab-analisi">
+      <div class="info-section">
+        <p class="analisi-title">Il clima siciliano comune per comune, 1950–2025</p>
+        <p class="info-text">La mappa incrocia, per ognuno dei <strong>391 comuni della Sicilia</strong>, due variabili climatiche alla volta, mese per mese dal 1950 al 2025 (912 mesi), a partire dai dati grezzi <strong>TerraClimate</strong> (University of Idaho).</p>
+
+        <h3 class="analisi-h3">Le due mappe bivariate</h3>
+        <ul class="analisi-list">
+          <li><strong>Temp × Precip</strong> — incrocia temperatura media e precipitazione totale media annua. Risponde a: questo comune è caldo o freddo, secco o piovoso, rispetto agli altri comuni siciliani?</li>
+          <li><strong>Deficit × Temp</strong> — incrocia temperatura media e <strong>deficit idrico climatico</strong> (PET − AET, evapotraspirazione potenziale meno reale). Il deficit riassume insieme pioggia, temperatura, vento e radiazione solare: un comune "caldo e piovoso" può sembrare innocuo nella mappa Temp × Precip, ma con vento forte e cieli sereni può nascondere uno stress idrico reale non visibile guardando solo la pioggia.</li>
+        </ul>
+        <p class="info-text">Ogni comune è classificato in una griglia 3×3 (terzili calcolati su tutti i 391 comuni) e colorato con una palette bivariata dedicata (tipo Stevens/CARTO).</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Trend 1950–2025</h3>
+        <p class="info-text">Per ogni comune viene calcolata una regressione OLS sui dati annuali dell'intero periodo: trend di temperatura in <strong>°C/decennio</strong> e trend della seconda variabile in <strong>mm/decennio</strong>, con indicazione di significatività statistica (p &lt; 0.05).</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Confronto periodi</h3>
+        <p class="info-text">Vista a doppia mappa con divisore trascinabile: si scelgono due periodi (Periodo A e Periodo B) e si confrontano fianco a fianco gli stessi comuni, per vedere come è cambiato il clima tra un'epoca e l'altra.</p>
+
+        <p class="analisi-footer">Dati: TerraClimate (climatologylab.org), confini amministrativi ISTAT.</p>
+      </div>
+    </div>
+
+    <div class="info-panel" id="itab-guida">
+      <div class="info-section">
+        <p class="analisi-title">Guida alla mappa</p>
+        <p class="info-text">Questa mappa mostra <strong>temperatura e precipitazioni</strong> (o temperatura e deficit idrico) per ogni comune siciliano, mese per mese dal 1950 al 2025. Ogni comune è un poligono colorato: il colore combina le due variabili scelte in un'unica scala bivariata.</p>
+
+        <h3 class="analisi-h3">Come leggere i colori</h3>
+        <p class="info-text">La <strong>legenda 3×3</strong> nel pannello di destra mostra a colpo d'occhio le 9 combinazioni possibili (basso/medio/alto su ciascuna variabile) ed è <strong>cliccabile</strong>: clicca una cella per isolare sulla mappa solo i comuni che rientrano in quella combinazione. Passa il mouse su un comune, o cliccaci sopra, per vedere i valori esatti nel popup.</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Modalità (pannello di destra)</h3>
+        <ul class="analisi-list">
+          <li><strong>Livello</strong> — la mappa bivariata classica, per il mese/anno selezionato nella timeline in basso</li>
+          <li><strong>Trend 1950-2025</strong> — mostra dove il riscaldamento è più marcato e dove i regimi di pioggia/deficit stanno cambiando di più</li>
+          <li><strong>Confronto</strong> — doppia mappa con divisore trascinabile per confrontare due periodi diversi</li>
+        </ul>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Timeline</h3>
+        <p class="info-text">In basso trovi la timeline con anni e mesi scorrevoli: clicca un anno o un mese per aggiornare la mappa, usa le frecce per scorrere, oppure il pulsante ▶ per animare l'intera serie storica anno per anno.</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Strumenti della toolbar</h3>
+        <ul class="analisi-list guida-list">
+          <li><span class="guida-icon"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg></span> <strong>Vista Sicilia</strong> — riporta la mappa all'inquadratura iniziale</li>
+          <li><span class="guida-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg></span> <strong>Tabella dati ed export</strong> — apre la tabella dati filtrabile per anno, mese, provincia e comune, con export CSV o GeoJSON</li>
+          <li><span class="guida-icon"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></span> <strong>Schermo intero</strong> — attiva/disattiva la modalità a tutto schermo</li>
+          <li><span class="guida-icon"><svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg></span> <strong>Tema chiaro/scuro</strong> — cambia la mappa di base tra tema chiaro e tema scuro</li>
+          <li><strong>Cursore opacità</strong> — regola la trasparenza del riempimento colorato dei comuni</li>
+        </ul>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Ricerca e filtri</h3>
+        <p class="info-text">La barra di ricerca in alto permette di cercare un comune per nome; il pulsante <strong>Filtri</strong> apre un pannello per restringere la vista a una provincia o a un singolo comune.</p>
+      </div>
+    </div>
+
+    <div class="info-panel" id="itab-credits">
+      <div class="info-section">
+        <div class="info-row">
+          <strong>Fonte dati climatici</strong><br><br>
+          <strong>TerraClimate</strong>: dataset climatico globale mensile ad alta risoluzione, University of Idaho<br>
+          <a href="https://www.climatologylab.org/terraclimate.html" title="TerraClimate" target="_blank" rel="noopener">climatologylab.org/terraclimate</a>
+        </div>
+        <div class="info-row">
+          <strong>Confini amministrativi</strong><br>
+          ISTAT — confini comunali 2022.
+        </div>
+        <div class="info-row">
+          <strong>Periodo</strong><br>
+          Dati mensili 1950–2025 (912 mesi), climatologia e trend calcolati sull'intero periodo.
+        </div>
+        <hr class="analisi-sep">
+        <p class="info-text">Web app progettata e sviluppata da <a href="https://www.linkedin.com/in/gbvitrano/" target="_blank" rel="noopener" class="mi-link">@gbvitrano</a> per <a href="https://opendatasicilia.it/" target="_blank" rel="noopener" class="mi-link">OpenDataSicilia.it</a>, in collaborazione con <a href="https://claude.ai" target="_blank" rel="noopener" class="mi-link">Claude AI (Anthropic)</a>.</p>
+        <p class="info-text">La mappa usa <b>MapLibre GL JS</b> e <b>PMTiles</b>, formato vettoriale che permette di caricare solo i tile visibili senza server backend: veloce, leggera e ospitabile su hosting statico.</p>
+        <hr class="analisi-sep">
+        <p class="info-text">I contenuti sono rilasciati sotto licenza <a href="https://creativecommons.org/licenses/by/4.0/deed.it" target="_blank" rel="noopener"><strong>CC BY 4.0 – Attribuzione 4.0 Internazionale</strong></a>. Sei libero di condividere e adattare il materiale per qualsiasi scopo, anche commerciale, citando adeguatamente la fonte.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=16"></script>
 <script src="js/compare.js?v=4"></script>
 </body>
 </html>

@@ -311,6 +311,7 @@ async function init() {
   setupSearch();
   setupFilterModal();
   setupTableModal();
+  setupInfoModal();
   setupToolbar();
   setupModeToggle();
   setupLayerTabs();
@@ -1122,6 +1123,30 @@ function stopPlay() {
   clearInterval(playTimer);
   playTimer = null;
   document.getElementById('tl-play').classList.remove('active');
+}
+
+function setupInfoModal() {
+  const overlay = document.getElementById('info-overlay');
+  const wrap = document.getElementById('info-wrap');
+  const modal = document.getElementById('info-modal');
+
+  function open() { overlay.classList.add('open'); wrap.classList.add('open'); }
+  function close() { overlay.classList.remove('open'); wrap.classList.remove('open'); }
+  function toggle() { wrap.classList.contains('open') ? close() : open(); }
+
+  document.getElementById('tb-info').addEventListener('click', toggle);
+  overlay.addEventListener('click', close);
+  document.getElementById('info-close').addEventListener('click', close);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  modal.querySelectorAll('.info-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      modal.querySelectorAll('.info-tab').forEach((t) => t.classList.remove('active'));
+      modal.querySelectorAll('.info-panel').forEach((p) => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('itab-' + tab.dataset.itab).classList.add('active');
+    });
+  });
 }
 
 function setupToolbar() {
