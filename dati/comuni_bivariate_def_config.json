@@ -1,0 +1,31 @@
+{
+  "map_id": "comuni_bivariate_def",
+  "title": "Temperatura media °C × Deficit idrico climatico mm/anno · Comuni di Sicilia",
+  "label_x": "Temperatura media °C",
+  "label_y": "Deficit idrico climatico mm/anno",
+  "unit_x": "°C",
+  "unit_y": "mm",
+  "breaks_x": [
+    15.72,
+    17.13
+  ],
+  "breaks_y": [
+    595.08,
+    716.23
+  ],
+  "province": [
+    "Agrigento",
+    "Caltanissetta",
+    "Catania",
+    "Enna",
+    "Messina",
+    "Palermo",
+    "Ragusa",
+    "Siracusa",
+    "Trapani"
+  ],
+  "source_layer": "comuni",
+  "stats_file": "dati/comuni_bivariate_def_stats.json",
+  "periodo": "TerraClimate 1950-2025 (climatologia)",
+  "fonte": "climatologylab.org (TerraClimate) + confini gbvitrano.it/anncus"
+}

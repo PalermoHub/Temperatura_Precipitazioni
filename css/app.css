@@ -136,6 +136,11 @@ body.panel-closed #br-stack { right: 20px; }
 
 .biv-hint { font-size: 9px; color: var(--text2); margin-top: 8px; }
 
+.layer-explain { font-size: 11px; line-height: 1.5; color: var(--text2); }
+.layer-explain p { margin: 0 0 8px; }
+.layer-explain p:last-child { margin-bottom: 0; }
+.layer-explain strong, .layer-explain em { color: var(--text); }
+
 /* ── STATS GRID ──────────────────────────────────────────────────────── */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .stat-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; }
@@ -380,6 +385,24 @@ body.panel-closed #map-timeline { left: 50%; }
 .tl-item.active { background: var(--accent); color: #fff; }
 .tl-item.tl-clima { border-color: var(--border); font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
 .tl-row-months .tl-item { font-size: 10px; padding: 3px 8px; }
+
+/* ── LAYER TABS (Temp×Precip / Deficit×Temp) ───────────────────────────── */
+.layer-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.layer-tab-btn {
+  border: none; background: transparent; color: var(--text2);
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 0 0 8px; margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all .15s; font-family: inherit;
+}
+.layer-tab-btn:hover { color: var(--text); }
+.layer-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.layer-tab-btn { padding-left: 14px; padding-right: 14px; }
+.layer-tab-btn:first-child { padding-left: 0; }
+.layer-tab-btn:not(:last-child) { border-right: 1px solid var(--border); }
 
 /* ── MODE TOGGLE (Livello / Trend) ─────────────────────────────────────── */
 .mode-toggle {

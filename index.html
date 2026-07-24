@@ -22,7 +22,7 @@
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
 		
-<link rel="stylesheet" href="css/app.css?v=11"/>
+<link rel="stylesheet" href="css/app.css?v=13"/>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87653723-4"></script>
@@ -162,6 +162,10 @@
   <div id="panel-body">
 
     <div class="fsec">
+      <div id="layer-tabs" class="layer-tabs">
+        <button class="layer-tab-btn active" data-layer="tp">Temp × Precip</button>
+        <button class="layer-tab-btn" data-layer="dt">Deficit × Temp</button>
+      </div>
       <div id="mode-toggle" class="mode-toggle">
         <button class="mode-btn active" data-mode="livello">Livello</button>
         <button class="mode-btn" data-mode="trend">Trend 1950-2025</button>
@@ -199,11 +203,18 @@
     <hr class="sep"/>
 
     <div class="fsec">
+      <h3 id="layer-explain-title">Cosa mostra questa mappa</h3>
+      <div id="layer-explain" class="layer-explain"></div>
+    </div>
+
+    <hr class="sep"/>
+
+    <div class="fsec">
       <h3>Mappa bivariata</h3>
       <div class="biv-diamond-wrap">
         <div class="biv-diamond" id="biv-grid"></div>
-        <div class="biv-diag-lbl biv-diag-lbl-x">← Temperatura</div>
-        <div class="biv-diag-lbl biv-diag-lbl-y">Precipitazione →</div>
+        <div class="biv-diag-lbl biv-diag-lbl-x" id="biv-diag-lbl-x">← Temperatura</div>
+        <div class="biv-diag-lbl biv-diag-lbl-y" id="biv-diag-lbl-y">Precipitazione →</div>
       </div>
       <p class="biv-hint">Clic su una cella per isolare la classe. Quintili su tutti i 391 comuni.</p>
     </div>
@@ -232,7 +243,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=9"></script>
-<script src="js/compare.js?v=3"></script>
+<script src="js/app.js?v=12"></script>
+<script src="js/compare.js?v=4"></script>
 </body>
 </html>

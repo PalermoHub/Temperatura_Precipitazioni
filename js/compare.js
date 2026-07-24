@@ -263,13 +263,14 @@ function showCompareInfo(id) {
   if (!a || !b) return;
   const delta = (x, y, dec) => (x != null && y != null) ? fmt(y - x, dec) : '—';
   document.getElementById('i-title').innerHTML = `${esc(a.nome)} · ${esc(a.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">Confronto periodi</span>`;
+  const fy = LAYERS[activeLayer].fieldY;
   document.getElementById('i-table').innerHTML = [
     [`Temperatura A (${esc(CMP_A_LABEL)})`, fmt(a.vx, 1) + ' °C'],
     [`Temperatura B (${esc(CMP_B_LABEL)})`, fmt(b.vx, 1) + ' °C'],
     ['Δ Temperatura', delta(a.vx, b.vx, 1) + ' °C'],
-    [`Precipitazione A (${esc(CMP_A_LABEL)})`, fmt(a.vy, 0) + ' mm'],
-    [`Precipitazione B (${esc(CMP_B_LABEL)})`, fmt(b.vy, 0) + ' mm'],
-    ['Δ Precipitazione', delta(a.vy, b.vy, 0) + ' mm'],
+    [`${fy} A (${esc(CMP_A_LABEL)})`, fmt(a.vy, 0) + ' mm'],
+    [`${fy} B (${esc(CMP_B_LABEL)})`, fmt(b.vy, 0) + ' mm'],
+    [`Δ ${fy}`, delta(a.vy, b.vy, 0) + ' mm'],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
   const badge = (p, label, period) => {
@@ -305,7 +306,7 @@ function updateCompareStats() {
   document.getElementById('compare-stats').innerHTML = `
     <div class="stat-item"><span class="stat-val">${sub.length}</span><span class="stat-lbl">comuni</span></div>
     <div class="stat-item"><span class="stat-val">${fmt(avg(dvxs), 1)}</span><span class="stat-lbl">Δ temp. media °C</span></div>
-    <div class="stat-item"><span class="stat-val">${fmt(avg(dvys), 0)}</span><span class="stat-lbl">Δ precip. media mm</span></div>
+    <div class="stat-item"><span class="stat-val">${fmt(avg(dvys), 0)}</span><span class="stat-lbl">Δ ${LAYERS[activeLayer].statsLblY}</span></div>
     <div class="stat-item"><span class="stat-val">${activeProv || 'Tutte'}</span><span class="stat-lbl">provincia</span></div>
   `;
 }
@@ -332,11 +333,12 @@ function buildCompareRanking() {
     </div>`;
   }
 
+  const l = LAYERS[activeLayer];
   container.innerHTML = [
     section('🔥', 'Riscaldamento maggiore', '°C', 'dvx', 'desc', RANK_COLORS.caldo, 1),
     section('🥶', 'Raffreddamento maggiore', '°C', 'dvx', 'asc', RANK_COLORS.freddo, 1),
-    section('💧', 'Maggior aumento piogge', 'mm', 'dvy', 'desc', RANK_COLORS.piovoso, 0),
-    section('🏜️', 'Maggior calo piogge', 'mm', 'dvy', 'asc', RANK_COLORS.arido, 0),
+    section(l.rankHi.icon, `Maggior aumento — ${l.rankHi.titleLivello.toLowerCase()}`, 'mm', 'dvy', 'desc', l.rankHi.color, 0),
+    section(l.rankLo.icon, `Maggior calo — ${l.rankLo.titleLivello.toLowerCase()}`, 'mm', 'dvy', 'asc', l.rankLo.color, 0),
   ].join('');
 
   container.querySelectorAll('.rank-row').forEach(row => {

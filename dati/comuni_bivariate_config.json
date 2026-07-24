@@ -24,7 +24,6 @@
     "Siracusa",
     "Trapani"
   ],
-  "pmtiles": "pmtiles://dati/geo/comuni_bivariate.pmtiles",
   "source_layer": "comuni",
   "stats_file": "dati/comuni_bivariate_stats.json",
   "periodo": "TerraClimate 1950-2025 (climatologia)",

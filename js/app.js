@@ -17,26 +17,35 @@ const CORNER_COLD_DRY  = [203, 184, 157]; // #cbb89d — tan/steppa
 const CORNER_HOT_DRY   = [217, 100, 44];  // #d9642c — terracotta/deserto
 const CORNER_COLD_WET  = [79, 131, 166];  // #4f83a6 — blu/alpino
 const CORNER_HOT_WET   = [74, 140, 95];   // #4a8c5f — verde/subtropicale
+// Etichette asse Y per il layer Deficit idrico climatico (def, mm — PET-AET)
+const DEF_LABELS = ['', 'molto umido', 'umido', 'nella media', 'stress idrico', 'stress idrico estremo'];
+const DEF_ICON = ['', '💧', '💧', '🌱', '🏜️', '🔥🏜️'];
+const DEF_LABELS_TR = ['', 'forte calo stress idrico', 'calo stress idrico', 'trend stabile', 'aumento stress idrico', 'forte aumento stress idrico'];
+const DEF_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
+
 // Colori classifiche: univariati, uno per variabile pura (non i vertici bivariati sopra,
 // che mescolano temp+precip e darebbero logica sbagliata a un ranking mono-variabile).
 const RANK_COLORS = {
   caldo: '#d9534f',  // rosso caldo
   freddo: '#3b7dd8', // blu freddo
-  piovoso: '#1f9c8a', // teal acqua/pioggia
-  arido: '#c9974f',  // ocra/sabbia siccità
 };
-const PAL = {};
-for (let tx = 1; tx <= 5; tx++) {
-  for (let ty = 1; ty <= 5; ty++) {
-    const u = (tx - 1) / 4, v = (ty - 1) / 4;
-    const rgb = [0, 1, 2].map(i => {
-      const top = CORNER_COLD_DRY[i] * (1 - u) + CORNER_HOT_DRY[i] * u;
-      const bot = CORNER_COLD_WET[i] * (1 - u) + CORNER_HOT_WET[i] * u;
-      return Math.round(top * (1 - v) + bot * v);
-    });
-    PAL[`${tx}-${ty}`] = `rgb(${rgb.join(',')})`;
+
+function buildPalette(corners) {
+  const pal = {};
+  for (let tx = 1; tx <= 5; tx++) {
+    for (let ty = 1; ty <= 5; ty++) {
+      const u = (tx - 1) / 4, v = (ty - 1) / 4;
+      const rgb = [0, 1, 2].map(i => {
+        const top = corners.coldLo[i] * (1 - u) + corners.hotLo[i] * u;
+        const bot = corners.coldHi[i] * (1 - u) + corners.hotHi[i] * u;
+        return Math.round(top * (1 - v) + bot * v);
+      });
+      pal[`${tx}-${ty}`] = `rgb(${rgb.join(',')})`;
+    }
   }
+  return pal;
 }
+
 const TEMP_LABELS = ['', 'molto freddo', 'freddo', 'nella media', 'caldo', 'molto caldo'];
 const PRECIP_LABELS = ['', 'molto secco', 'secco', 'nella media', 'piovoso', 'molto piovoso'];
 const TEMP_ICON = ['', '🥶', '🌡️', '🌡️', '☀️', '🔥'];
@@ -46,11 +55,67 @@ const TEMP_LABELS_TR = ['', 'riscaldamento debole', 'riscaldamento lieve', 'risc
 const PRECIP_LABELS_TR = ['', 'forte calo piogge', 'calo piogge', 'trend stabile', 'aumento piogge', 'forte aumento piogge'];
 const TEMP_ICON_TR = ['', '↗️', '↗️', '⬆️', '🔥', '🔥'];
 const PRECIP_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
-const LABELS = {
-  livello: { temp: TEMP_LABELS, precip: PRECIP_LABELS, tempIcon: TEMP_ICON, precipIcon: PRECIP_ICON },
-  trend:   { temp: TEMP_LABELS_TR, precip: PRECIP_LABELS_TR, tempIcon: TEMP_ICON_TR, precipIcon: PRECIP_ICON_TR },
+
+const LAYERS = {
+  tp: {
+    id: 'tp', tabLabel: 'Temp × Precip',
+    statsUrl: 'dati/comuni_bivariate_stats.json',
+    tsUrl: 'dati/comuni_timeseries.json',
+    trendUrl: 'dati/comuni_trend_stats.json',
+    corners: { coldLo: CORNER_COLD_DRY, hotLo: CORNER_HOT_DRY, coldHi: CORNER_COLD_WET, hotHi: CORNER_HOT_WET },
+    yLabels: PRECIP_LABELS, yIcon: PRECIP_ICON,
+    yLabelsTr: PRECIP_LABELS_TR, yIconTr: PRECIP_ICON_TR,
+    axisLabelY: 'Precipitazione →',
+    fieldY: 'Precipitazione', fieldYTrend: 'Trend precipitazione',
+    statsLblY: 'precip. media mm', statsLblYTr: 'trend precip. mm/decennio',
+    pairTitle: 'Temperatura × Precipitazione',
+    pairTitleTrend: 'Trend Temperatura × Precipitazione',
+    panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025',
+    panelSubTrend: '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)',
+    rankHi: { key: 'piovoso', icon: '💧', color: '#1f9c8a', titleLivello: 'Più piovosi', titleTrend: 'Piogge in aumento', dec: 0, decTrend: 1 },
+    rankLo: { key: 'arido', icon: '🏜️', color: '#c9974f', titleLivello: 'Più aridi', titleTrend: 'Piogge in calo', dec: 0, decTrend: 1 },
+    explain: `<p>Questa mappa incrocia temperatura e precipitazione media per capire, a colpo d'occhio, se un comune è caldo/freddo e secco/piovoso rispetto agli altri della Sicilia.</p>
+<p>La pioggia dice solo quanta acqua <em>arriva</em>, non quanta ne resta davvero disponibile. Due comuni con la stessa piovosità possono avere uno stress idrico molto diverso: uno fresco e riparato dal vento trattiene l'acqua nel suolo, uno caldo, ventoso e assolato ne perde di più per evaporazione.</p>
+<p>Incrociare temperatura e pioggia dà un'idea approssimativa di questo effetto — più caldo, in genere, significa più acqua persa — ma è comunque una stima indiretta. Per il dato preciso (quanta acqua manca davvero) usa la scheda <strong>Deficit × Temp</strong>.</p>
+<p>Utile per: farsi un'idea rapida del clima di un comune (caldo/freddo, secco/piovoso) e confrontarlo con altri.</p>`,
+  },
+  dt: {
+    id: 'dt', tabLabel: 'Deficit × Temp',
+    statsUrl: 'dati/comuni_bivariate_def_stats.json',
+    tsUrl: 'dati/comuni_timeseries_def.json',
+    trendUrl: 'dati/comuni_trend_def_stats.json',
+    corners: {
+      coldLo: [169, 201, 196], hotLo: [79, 143, 138],   // freddo/caldo, deficit basso (umido) — verde-teal
+      coldHi: [169, 143, 122], hotHi: [140, 47, 31],    // freddo/caldo, deficit alto (arido) — ocra/rosso terracotta
+    },
+    yLabels: DEF_LABELS, yIcon: DEF_ICON,
+    yLabelsTr: DEF_LABELS_TR, yIconTr: DEF_ICON_TR,
+    axisLabelY: 'Deficit idrico →',
+    fieldY: 'Deficit idrico', fieldYTrend: 'Trend deficit idrico',
+    statsLblY: 'deficit medio mm', statsLblYTr: 'trend deficit mm/decennio',
+    pairTitle: 'Temperatura × Deficit idrico',
+    pairTitleTrend: 'Trend Temperatura × Deficit idrico',
+    panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025 (def = PET−AET)',
+    panelSubTrend: '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)',
+    rankHi: { key: 'stress_alto', icon: '🏜️', color: '#a85c3b', titleLivello: 'Maggior stress idrico', titleTrend: 'Stress idrico in aumento', dec: 0, decTrend: 1 },
+    rankLo: { key: 'stress_basso', icon: '💧', color: '#4f8f8a', titleLivello: 'Minor stress idrico', titleTrend: 'Stress idrico in calo', dec: 0, decTrend: 1 },
+    explain: `<p>Questa mappa incrocia temperatura e deficit idrico climatico per mostrare lo stress idrico reale di ogni comune, non solo quanto piove.</p>
+<p>Il <strong>deficit idrico</strong> (def = PET − AET) misura quanta acqua manca davvero rispetto a quella che l'atmosfera "vorrebbe" far evaporare, dato calore, vento e sole di ogni comune. È già un indice di sintesi: mette insieme pioggia, temperatura, vento e radiazione solare in un solo numero — a differenza della pioggia grezza, che va sempre interpretata a mente insieme alla temperatura.</p>
+<p>Un comune "caldo e piovoso" sembra innocuo nella mappa Temp × Precip, ma se ha vento forte e cieli sereni può nascondere un deficit idrico reale, non visibile guardando solo quanto piove.</p>
+<p>Utile per: agricoltura (quanta acqua serve davvero alle colture), rischio incendi, gestione delle risorse idriche comunali — le domande a cui agronomi e idrologi rispondono con questo dato, non con la pioggia grezza.</p>`,
+  },
 };
-const curLabels = () => LABELS[MODE === 'confronto' ? 'livello' : MODE];
+
+let activeLayer = 'tp';
+let PAL = {};
+const layerCache = {};
+
+function curLabels() {
+  const l = LAYERS[activeLayer];
+  return MODE === 'trend'
+    ? { temp: TEMP_LABELS_TR, precip: l.yLabelsTr, tempIcon: TEMP_ICON_TR, precipIcon: l.yIconTr }
+    : { temp: TEMP_LABELS, precip: l.yLabels, tempIcon: TEMP_ICON, precipIcon: l.yIcon };
+}
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
 // luminanza percepita: testo scuro sui toni chiari della rampa, bianco sui toni scuri
 function textOnPal(rgbStr) {
@@ -59,7 +124,6 @@ function textOnPal(rgbStr) {
   return lum > 0.6 ? '#2a2a2a' : '#fff';
 }
 
-let CONFIG = null;
 let BASE_STATS = null;   // climatologia 1950-2025: id, nome, prov, vx, vy, biv, tmax, tmin
 let BASE_BY_ID = {};
 let TS = null;           // { id_order, years, periods: { "YYYY-MM": {vx,vy,tmax,tmin} } }
@@ -140,30 +204,104 @@ function closeAttrib() {
 map.on('load', closeAttrib);
 map.on('resize', closeAttrib);
 
-async function init() {
-  const [cfgRes, statsRes, tsRes, trendStatsRes] = await Promise.all([
-    fetch('dati/comuni_bivariate_config.json'),
-    fetch('dati/comuni_bivariate_stats.json'),
-    fetch('dati/comuni_timeseries.json'),
-    fetch('dati/comuni_trend_stats.json'),
+async function loadLayerData(id) {
+  if (layerCache[id]) return layerCache[id];
+  const cfg = LAYERS[id];
+  const [statsRes, tsRes, trendRes] = await Promise.all([
+    fetch(cfg.statsUrl), fetch(cfg.tsUrl), fetch(cfg.trendUrl),
   ]);
-  CONFIG = await cfgRes.json();
-  BASE_STATS = (await statsRes.json()).props;
-  TS = await tsRes.json();
-  TREND_STATS = (await trendStatsRes.json()).props;
-  BASE_STATS.forEach(p => { BASE_BY_ID[p.id] = p; });
-  attachClimaTminTmax();
+  const newBaseStats = (await statsRes.json()).props;
+  const newTs = await tsRes.json();
+  const newTrendStats = (await trendRes.json()).props;
+  const newBaseById = {};
+  newBaseStats.forEach(p => { newBaseById[p.id] = p; });
 
-  BREAKS_X = quintileBreaks(BASE_STATS.map(p => p.vx));
-  BREAKS_Y = quintileBreaks(BASE_STATS.map(p => p.vy));
-
-  BREAKS_X_TR = quintileBreaks(TREND_STATS.map(p => p.vx));
-  BREAKS_Y_TR = quintileBreaks(TREND_STATS.map(p => p.vy));
-  TREND_STATS.forEach(p => {
-    const cx = classify5(p.vx, BREAKS_X_TR), cy = classify5(p.vy, BREAKS_Y_TR);
-    p.biv = (cx && cy) ? `${cx}-${cy}` : null;
-    TREND_BY_ID[p.id] = p;
+  // climatologia: aggiunge tmax/tmin medi (media di tutti i mesi) a newBaseStats
+  const n = newTs.id_order.length;
+  const sumMax = new Array(n).fill(0), cntMax = new Array(n).fill(0);
+  const sumMin = new Array(n).fill(0), cntMin = new Array(n).fill(0);
+  Object.values(newTs.periods).forEach(p => {
+    p.tmax.forEach((v, c) => { if (v != null) { sumMax[c] += v; cntMax[c]++; } });
+    p.tmin.forEach((v, c) => { if (v != null) { sumMin[c] += v; cntMin[c]++; } });
   });
+  newTs.id_order.forEach((cid, c) => {
+    const p = newBaseById[cid];
+    if (!p) return;
+    p.tmax = cntMax[c] ? +(sumMax[c] / cntMax[c]).toFixed(2) : null;
+    p.tmin = cntMin[c] ? +(sumMin[c] / cntMin[c]).toFixed(2) : null;
+  });
+
+  const newBreaksX = quintileBreaks(newBaseStats.map(p => p.vx));
+  const newBreaksY = quintileBreaks(newBaseStats.map(p => p.vy));
+  const newBreaksXTr = quintileBreaks(newTrendStats.map(p => p.vx));
+  const newBreaksYTr = quintileBreaks(newTrendStats.map(p => p.vy));
+  const newTrendById = {};
+  newTrendStats.forEach(p => {
+    const cx = classify5(p.vx, newBreaksXTr), cy = classify5(p.vy, newBreaksYTr);
+    p.biv = (cx && cy) ? `${cx}-${cy}` : null;
+    newTrendById[p.id] = p;
+  });
+
+  const data = {
+    BASE_STATS: newBaseStats, BASE_BY_ID: newBaseById, TS: newTs,
+    TREND_STATS: newTrendStats, TREND_BY_ID: newTrendById,
+    BREAKS_X: newBreaksX, BREAKS_Y: newBreaksY,
+    BREAKS_X_TR: newBreaksXTr, BREAKS_Y_TR: newBreaksYTr,
+    PAL: buildPalette(cfg.corners),
+  };
+  layerCache[id] = data;
+  return data;
+}
+
+function applyLayerData(data) {
+  BASE_STATS = data.BASE_STATS; BASE_BY_ID = data.BASE_BY_ID;
+  TS = data.TS; TREND_STATS = data.TREND_STATS; TREND_BY_ID = data.TREND_BY_ID;
+  BREAKS_X = data.BREAKS_X; BREAKS_Y = data.BREAKS_Y;
+  BREAKS_X_TR = data.BREAKS_X_TR; BREAKS_Y_TR = data.BREAKS_Y_TR;
+  PAL = data.PAL;
+}
+
+function updateLayerChrome() {
+  const l = LAYERS[activeLayer];
+  document.getElementById('biv-diag-lbl-y').textContent = l.axisLabelY;
+  document.getElementById('panel-title').textContent = MODE === 'trend' ? l.pairTitleTrend : l.pairTitle;
+  document.getElementById('panel-sub').textContent = MODE === 'trend' ? l.panelSubTrend : l.panelSub;
+  document.getElementById('s-precip-lbl').textContent = MODE === 'trend' ? l.statsLblYTr : l.statsLblY;
+  document.getElementById('layer-explain').innerHTML = l.explain;
+  document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.layer === activeLayer));
+}
+
+async function switchLayer(id) {
+  if (id === activeLayer || !LAYERS[id]) return;
+  stopPlay();
+  const data = await loadLayerData(id);
+  activeLayer = id;
+  applyLayerData(data);
+  activeBiv = null;
+  document.querySelectorAll('.biv-cell').forEach(c => c.classList.remove('active'));
+  buildBivGrid();
+  updateLayerChrome();
+  if (MODE === 'trend') {
+    CURRENT = TREND_STATS; CURRENT_BY_ID = TREND_BY_ID;
+    applyFilters(); updateFilterUI();
+  } else if (MODE === 'confronto') {
+    applyCompare();
+  } else {
+    setPeriod(selYear, selMonth);
+  }
+  if (document.getElementById('floating-rank').classList.contains('open')) renderFloatingRank();
+}
+
+function setupLayerTabs() {
+  document.getElementById('layer-tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.layer-tab-btn');
+    if (btn) switchLayer(btn.dataset.layer);
+  });
+}
+
+async function init() {
+  const data = await loadLayerData('tp');
+  applyLayerData(data);
 
   buildBivGrid();
   buildProvinceSelect();
@@ -175,8 +313,10 @@ async function init() {
   setupFilterModal();
   setupToolbar();
   setupModeToggle();
+  setupLayerTabs();
   setupCompareUI();
   setupCompareDivider();
+  updateLayerChrome();
 
   map.on('load', () => {
     map.addSource('comuni', {
@@ -209,23 +349,6 @@ async function init() {
     });
 
     setupHover();
-  });
-}
-
-// climatologia: aggiunge tmax/tmin medi (media di tutti i 912 mesi) a BASE_STATS
-function attachClimaTminTmax() {
-  const n = TS.id_order.length;
-  const sumMax = new Array(n).fill(0), cntMax = new Array(n).fill(0);
-  const sumMin = new Array(n).fill(0), cntMin = new Array(n).fill(0);
-  Object.values(TS.periods).forEach(p => {
-    p.tmax.forEach((v, c) => { if (v != null) { sumMax[c] += v; cntMax[c]++; } });
-    p.tmin.forEach((v, c) => { if (v != null) { sumMin[c] += v; cntMin[c]++; } });
-  });
-  TS.id_order.forEach((id, c) => {
-    const p = BASE_BY_ID[id];
-    if (!p) return;
-    p.tmax = cntMax[c] ? +(sumMax[c] / cntMax[c]).toFixed(2) : null;
-    p.tmin = cntMin[c] ? +(sumMin[c] / cntMin[c]).toFixed(2) : null;
   });
 }
 
@@ -382,7 +505,8 @@ function buildBivGrid() {
 
 function buildProvinceSelect() {
   const sel = document.getElementById('sel-provincia');
-  CONFIG.province.forEach(p => {
+  const province = [...new Set(BASE_STATS.map(p => p.prov))].sort((a, b) => a.localeCompare(b, 'it'));
+  province.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p; opt.textContent = p;
     sel.appendChild(opt);
@@ -427,7 +551,8 @@ function setupSearch() {
     clear.style.display = input.value ? '' : 'none';
     if (!q) { dd.innerHTML = ''; dd.classList.remove('open'); return; }
 
-    const provMatches = CONFIG.province.filter(p => p.toLowerCase().includes(q)).slice(0, 5);
+    const provinceAll = [...new Set(BASE_STATS.map(p => p.prov))];
+    const provMatches = provinceAll.filter(p => p.toLowerCase().includes(q)).slice(0, 5);
     const comuneMatches = BASE_STATS.filter(p => p.nome.toLowerCase().includes(q)).slice(0, 8);
 
     let html = '';
@@ -576,19 +701,20 @@ function updateStats() {
 }
 
 function rankSections() {
+  const l = LAYERS[activeLayer];
   if (MODE === 'trend') {
     return [
       ['caldo', '🔥', 'Riscaldamento più forte', '°C/decennio', 'vx', 'desc', RANK_COLORS.caldo, 2],
       ['freddo', '🥶', 'Riscaldamento più debole', '°C/decennio', 'vx', 'asc', RANK_COLORS.freddo, 2],
-      ['piovoso', '💧', 'Piogge in aumento', 'mm/decennio', 'vy', 'desc', RANK_COLORS.piovoso, 1],
-      ['arido', '🏜️', 'Piogge in calo', 'mm/decennio', 'vy', 'asc', RANK_COLORS.arido, 1],
+      [l.rankHi.key, l.rankHi.icon, l.rankHi.titleTrend, 'mm/decennio', 'vy', 'desc', l.rankHi.color, l.rankHi.decTrend],
+      [l.rankLo.key, l.rankLo.icon, l.rankLo.titleTrend, 'mm/decennio', 'vy', 'asc', l.rankLo.color, l.rankLo.decTrend],
     ];
   }
   return [
     ['caldo', '🔥', 'Più caldi', '°C', 'vx', 'desc', RANK_COLORS.caldo, 1],
     ['freddo', '🥶', 'Più freddi', '°C', 'vx', 'asc', RANK_COLORS.freddo, 1],
-    ['piovoso', '💧', 'Più piovosi', 'mm', 'vy', 'desc', RANK_COLORS.piovoso, 0],
-    ['arido', '🏜️', 'Più aridi', 'mm', 'vy', 'asc', RANK_COLORS.arido, 0],
+    [l.rankHi.key, l.rankHi.icon, l.rankHi.titleLivello, 'mm', 'vy', 'desc', l.rankHi.color, l.rankHi.dec],
+    [l.rankLo.key, l.rankLo.icon, l.rankLo.titleLivello, 'mm', 'vy', 'asc', l.rankLo.color, l.rankLo.dec],
   ];
 }
 
@@ -678,7 +804,7 @@ function showInfo(p) {
     document.getElementById('i-table').innerHTML = [
       ['Trend temperatura', fmt(p.vx, 2) + ' °C/decennio'],
       ['Significatività temp.', sigTxt(p.temp_sig)],
-      ['Trend precipitazione', fmt(p.vy, 1) + ' mm/decennio'],
+      [LAYERS[activeLayer].fieldYTrend, fmt(p.vy, 1) + ' mm/decennio'],
       ['Significatività precip.', sigTxt(p.precip_sig)],
     ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   } else {
@@ -686,7 +812,7 @@ function showInfo(p) {
       ['Temperatura media', fmt(p.vx, 1) + ' °C'],
       ['Temperatura max', fmt(p.tmax, 1) + ' °C'],
       ['Temperatura min', fmt(p.tmin, 1) + ' °C'],
-      ['Precipitazione', fmt(p.vy, 0) + ' mm'],
+      [LAYERS[activeLayer].fieldY, fmt(p.vy, 0) + ' mm'],
     ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);
@@ -718,6 +844,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 
 function renderFloatingRank() {
   const sub = currentSubset();
+  const l = LAYERS[activeLayer];
   const box = document.getElementById('floating-rank');
   function top3(key, dir, unit, dec) {
     const sorted = [...sub].filter(p => p[key] != null).sort((a, b) => dir === 'desc' ? b[key] - a[key] : a[key] - b[key]).slice(0, 3);
@@ -726,11 +853,11 @@ function renderFloatingRank() {
   if (MODE === 'trend') {
     box.innerHTML =
       `<h4>Riscaldamento più forte</h4>${top3('vx', 'desc', '°C/decennio', 2)}` +
-      `<h4>Piogge in aumento</h4>${top3('vy', 'desc', 'mm/decennio', 1)}`;
+      `<h4>${l.rankHi.titleTrend}</h4>${top3('vy', 'desc', 'mm/decennio', 1)}`;
   } else {
     box.innerHTML =
       `<h4>Più caldi</h4>${top3('vx', 'desc', '°C', 1)}` +
-      `<h4>Più piovosi</h4>${top3('vy', 'desc', 'mm', 0)}`;
+      `<h4>${l.rankHi.titleLivello}</h4>${top3('vy', 'desc', 'mm', 0)}`;
   }
 }
 
@@ -748,15 +875,14 @@ function setMode(mode) {
   document.body.classList.toggle('mode-trend', mode === 'trend');
   document.body.classList.toggle('mode-confronto', mode === 'confronto');
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  const l = LAYERS[activeLayer];
   document.getElementById('panel-title').textContent =
-    mode === 'trend' ? 'Trend Temperatura × Precipitazione' :
-    mode === 'confronto' ? 'Confronto periodi' : 'Temperatura × Precipitazione';
+    mode === 'confronto' ? 'Confronto periodi' : (mode === 'trend' ? l.pairTitleTrend : l.pairTitle);
   document.getElementById('panel-sub').textContent =
-    mode === 'trend' ? '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)' :
     mode === 'confronto' ? '391 comuni di Sicilia — confronto tra due periodi climatologici' :
-    '391 comuni di Sicilia — climatologia TerraClimate 1950-2025';
+    (mode === 'trend' ? l.panelSubTrend : l.panelSub);
   document.getElementById('s-temp-lbl').textContent = mode === 'trend' ? 'trend temp. °C/decennio' : 'temp. media °C';
-  document.getElementById('s-precip-lbl').textContent = mode === 'trend' ? 'trend precip. mm/decennio' : 'precip. media mm';
+  document.getElementById('s-precip-lbl').textContent = mode === 'trend' ? l.statsLblYTr : l.statsLblY;
 
   if (prevMode === 'confronto' && mode !== 'confronto') exitCompareMode();
 
