@@ -2,7 +2,7 @@
 
 Mappa interattiva (MapLibre GL + PMTiles) dei 391 comuni della Sicilia che incrocia, comune per comune, temperatura e precipitazioni (o, in alternativa, temperatura e deficit idrico climatico), mese per mese dal 1950 al 2025.
 
-Sito pubblicato da OpenDataSicilia.it — dati grezzi TerraClimate (University of Idaho / climatologylab.org).
+Sito pubblicato da OpenDataSicilia.it — dati grezzi TerraClimate (University of Idaho / climatologylab.org) e dati incendi SIF (Sistema Informativo Forestale, Regione Siciliana).
 
 ---
 
@@ -146,4 +146,4 @@ Questo progetto è distribuito con licenza [Creative Commons Attribuzione 4.0 In
 
 Sei libero di condividere e adattare il materiale per qualsiasi uso, anche commerciale, purché venga data adeguata attribuzione a OpenDataSicilia.it. Vedi il file [LICENSE](LICENSE) per il testo completo.
 
-Dati climatici grezzi: TerraClimate (University of Idaho, climatologylab.org). Confini amministrativi: ISTAT.
+Dati climatici grezzi: TerraClimate (University of Idaho, climatologylab.org). Dati incendi: SIF — Sistema Informativo Forestale, Regione Siciliana, Censimento incendi 2007-2025 (https://sif.regione.sicilia.it/ilportale/). Confini amministrativi: ISTAT.
