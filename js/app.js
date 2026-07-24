@@ -56,6 +56,17 @@ const PRECIP_LABELS_TR = ['', 'forte calo piogge', 'calo piogge', 'trend stabile
 const TEMP_ICON_TR = ['', '↗️', '↗️', '⬆️', '🔥', '🔥'];
 const PRECIP_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
 
+// Etichette asse X per il layer PDSI x Incendi (PDSI = Palmer Drought Severity Index,
+// negativo = siccita', positivo = surplus idrico)
+const PDSI_LABELS = ['', 'siccità estrema', 'siccità moderata', 'nella norma', 'umido', 'molto umido'];
+const PDSI_ICON = ['', '🏜️', '🏜️', '🌱', '💧', '💧'];
+// Etichette asse Y: area bruciata o conteggio incendi (0 = classe dedicata "nessun incendio")
+const FIRE_LABELS_AREA = ['nessun incendio', 'area minima', 'area contenuta', 'area media', 'area estesa', 'area molto estesa'];
+const FIRE_ICON_AREA = ['⬜', '🔥', '🔥', '🔥', '🔥🔥', '🔥🔥'];
+const FIRE_LABELS_COUNT = ['nessun incendio', 'pochi eventi', 'alcuni eventi', 'eventi nella media', 'molti eventi', 'moltissimi eventi'];
+const FIRE_ICON_COUNT = ['⬜', '🔥', '🔥', '🔥', '🔥🔥', '🔥🔥'];
+const FIRE_ZERO_COLOR = '#c9c9c9'; // grigio neutro, indipendente dal PDSI
+
 const LAYERS = {
   tp: {
     id: 'tp', tabLabel: 'Temp × Precip',
@@ -68,6 +79,12 @@ const LAYERS = {
     axisLabelY: 'Precipitazione →',
     fieldY: 'Precipitazione', fieldYTrend: 'Trend precipitazione',
     statsLblY: 'precip. media mm', statsLblYTr: 'trend precip. mm/decennio',
+    axisLabelX: '← Temperatura',
+    xLabels: TEMP_LABELS, xIcon: TEMP_ICON, xLabelsTr: TEMP_LABELS_TR, xIconTr: TEMP_ICON_TR,
+    fieldX: 'Temperatura media', fieldXBase: 'Temperatura', xUnit: '°C', xDec: 1,
+    rankHiX: { key: 'caldo', icon: '🔥', color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
+    rankLoX: { key: 'freddo', icon: '🥶', color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
+    hasMinMax: true,
     pairTitle: 'Temperatura × Precipitazione',
     pairTitleTrend: 'Trend Temperatura × Precipitazione',
     panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025',
@@ -93,6 +110,12 @@ const LAYERS = {
     axisLabelY: 'Deficit idrico →',
     fieldY: 'Deficit idrico', fieldYTrend: 'Trend deficit idrico',
     statsLblY: 'deficit medio mm', statsLblYTr: 'trend deficit mm/decennio',
+    axisLabelX: '← Temperatura',
+    xLabels: TEMP_LABELS, xIcon: TEMP_ICON, xLabelsTr: TEMP_LABELS_TR, xIconTr: TEMP_ICON_TR,
+    fieldX: 'Temperatura media', fieldXBase: 'Temperatura', xUnit: '°C', xDec: 1,
+    rankHiX: { key: 'caldo', icon: '🔥', color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
+    rankLoX: { key: 'freddo', icon: '🥶', color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
+    hasMinMax: true,
     pairTitle: 'Temperatura × Deficit idrico',
     pairTitleTrend: 'Trend Temperatura × Deficit idrico',
     panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025 (def = PET−AET)',
@@ -104,6 +127,66 @@ const LAYERS = {
 <p>Un comune "caldo e piovoso" sembra innocuo nella mappa Temp × Precip, ma se ha vento forte e cieli sereni può nascondere un deficit idrico reale, non visibile guardando solo quanto piove.</p>
 <p>Utile per: agricoltura (quanta acqua serve davvero alle colture), rischio incendi, gestione delle risorse idriche comunali — le domande a cui agronomi e idrologi rispondono con questo dato, non con la pioggia grezza.</p>`,
   },
+  pf_area: {
+    id: 'pf_area', tabGroup: 'pf', tabLabel: 'PDSI × Incendi', fireMetric: 'area',
+    statsUrl: 'dati/comuni_bivariate_pf_area_stats.json',
+    tsUrl: 'dati/comuni_timeseries_pf_area.json',
+    trendUrl: 'dati/comuni_bivariate_pf_area_trend_stats.json',
+    corners: {
+      coldLo: [214, 210, 196], hotLo: [176, 124, 74],   // pdsi umido/secco, incendio basso — beige-ocra
+      coldHi: [156, 42, 42], hotHi: [122, 20, 20],       // pdsi umido/secco, incendio alto — rosso bruciato
+    },
+    zeroColor: FIRE_ZERO_COLOR, zeroClassY: true, yAggAnnual: 'const',
+    axisLabelX: '← PDSI (siccità)', axisLabelY: 'Area bruciata →',
+    xLabels: PDSI_LABELS, xIcon: PDSI_ICON, xLabelsTr: PDSI_LABELS, xIconTr: PDSI_ICON,
+    fieldX: 'PDSI medio', fieldXBase: 'PDSI', xUnit: 'indice', xDec: 2,
+    yLabels: FIRE_LABELS_AREA, yIcon: FIRE_ICON_AREA, yLabelsTr: FIRE_LABELS_AREA, yIconTr: FIRE_ICON_AREA,
+    fieldY: 'Area bruciata', fieldYTrend: 'Area bruciata', yUnit: 'ha', yDec: 1,
+    statsLblY: 'area media ha/anno', statsLblYTr: 'area media ha/anno',
+    rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
+    rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
+    rankHi: { key: 'area_alta', icon: '🔥', color: '#7a2020', titleLivello: 'Più area bruciata', dec: 0 },
+    rankLo: { key: 'area_bassa', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno area bruciata', dec: 0 },
+    hasMinMax: false,
+    pairTitle: 'PDSI × Area bruciata',
+    pairTitleTrend: 'PDSI × Area bruciata',
+    panelSub: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    panelSubTrend: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    explain: `<p>Questa mappa incrocia il PDSI (indice di siccità) con l'area bruciata dagli incendi per capire quanto la siccità sia associata a un maggiore rischio incendio, comune per comune.</p>
+<p>Il dato incendio è sempre <strong>annuale</strong>: selezionando un mese specifico nella timeline, il valore PDSI si aggiorna a quel mese ma l'area bruciata resta il totale dell'intero anno (il dataset non è ancora aggregato per mese, anche se la maggior parte degli incendi dal 2010 in poi riporta una data precisa).</p>
+<p>Periodo disponibile: 2007-2025, con il 2019 assente dal dataset regionale antincendio.</p>
+<p>I comuni senza alcun incendio registrato in un dato anno appaiono in grigio neutro, non nella classe "meno secco/poco incendio" — per non confondere "nessun dato" con "rischio basso".</p>`,
+  },
+  pf_count: {
+    id: 'pf_count', tabGroup: 'pf', tabLabel: 'PDSI × Incendi', fireMetric: 'count',
+    statsUrl: 'dati/comuni_bivariate_pf_count_stats.json',
+    tsUrl: 'dati/comuni_timeseries_pf_count.json',
+    trendUrl: 'dati/comuni_bivariate_pf_count_trend_stats.json',
+    corners: {
+      coldLo: [214, 210, 196], hotLo: [176, 124, 74],
+      coldHi: [156, 42, 42], hotHi: [122, 20, 20],
+    },
+    zeroColor: FIRE_ZERO_COLOR, zeroClassY: true, yAggAnnual: 'const',
+    axisLabelX: '← PDSI (siccità)', axisLabelY: 'N. incendi →',
+    xLabels: PDSI_LABELS, xIcon: PDSI_ICON, xLabelsTr: PDSI_LABELS, xIconTr: PDSI_ICON,
+    fieldX: 'PDSI medio', fieldXBase: 'PDSI', xUnit: 'indice', xDec: 2,
+    yLabels: FIRE_LABELS_COUNT, yIcon: FIRE_ICON_COUNT, yLabelsTr: FIRE_LABELS_COUNT, yIconTr: FIRE_ICON_COUNT,
+    fieldY: 'N. incendi', fieldYTrend: 'N. incendi', yUnit: '', yDec: 1,
+    statsLblY: 'eventi medi/anno', statsLblYTr: 'eventi medi/anno',
+    rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
+    rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
+    rankHi: { key: 'eventi_alti', icon: '🔥', color: '#7a2020', titleLivello: 'Più incendi', dec: 0 },
+    rankLo: { key: 'eventi_bassi', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno incendi', dec: 0 },
+    hasMinMax: false,
+    pairTitle: 'PDSI × N. incendi',
+    pairTitleTrend: 'PDSI × N. incendi',
+    panelSub: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    panelSubTrend: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    explain: `<p>Questa mappa incrocia il PDSI (indice di siccità) con il numero di incendi registrati per capire quanto la siccità sia associata a una maggiore frequenza di focolai, comune per comune.</p>
+<p>Il dato incendio è sempre <strong>annuale</strong>: selezionando un mese specifico nella timeline, il valore PDSI si aggiorna a quel mese ma il conteggio incendi resta il totale dell'intero anno.</p>
+<p>Periodo disponibile: 2007-2025, con il 2019 assente dal dataset regionale antincendio.</p>
+<p>I comuni senza alcun incendio registrato in un dato anno appaiono in grigio neutro, non nella classe "meno secco/pochi eventi" — per non confondere "nessun dato" con "rischio basso".</p>`,
+  },
 };
 
 let activeLayer = 'tp';
@@ -113,8 +196,8 @@ const layerCache = {};
 function curLabels() {
   const l = LAYERS[activeLayer];
   return MODE === 'trend'
-    ? { temp: TEMP_LABELS_TR, precip: l.yLabelsTr, tempIcon: TEMP_ICON_TR, precipIcon: l.yIconTr }
-    : { temp: TEMP_LABELS, precip: l.yLabels, tempIcon: TEMP_ICON, precipIcon: l.yIcon };
+    ? { temp: l.xLabelsTr, precip: l.yLabelsTr, tempIcon: l.xIconTr, precipIcon: l.yIconTr }
+    : { temp: l.xLabels, precip: l.yLabels, tempIcon: l.xIcon, precipIcon: l.yIcon };
 }
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
 // luminanza percepita: testo scuro sui toni chiari della rampa, bianco sui toni scuri
@@ -232,7 +315,10 @@ async function loadLayerData(id) {
   });
 
   const newBreaksX = quintileBreaks(newBaseStats.map(p => p.vx));
-  const newBreaksY = quintileBreaks(newBaseStats.map(p => p.vy));
+  const yValuesForBreaks = cfg.zeroClassY
+    ? newBaseStats.map(p => p.vy).filter(v => v != null && v !== 0)
+    : newBaseStats.map(p => p.vy);
+  const newBreaksY = quintileBreaks(yValuesForBreaks);
   const newBreaksXTr = quintileBreaks(newTrendStats.map(p => p.vx));
   const newBreaksYTr = quintileBreaks(newTrendStats.map(p => p.vy));
   const newTrendById = {};
@@ -242,12 +328,17 @@ async function loadLayerData(id) {
     newTrendById[p.id] = p;
   });
 
+  const pal = buildPalette(cfg.corners);
+  if (cfg.zeroColor) {
+    for (let tx = 1; tx <= 5; tx++) pal[`${tx}-0`] = cfg.zeroColor;
+  }
+
   const data = {
     BASE_STATS: newBaseStats, BASE_BY_ID: newBaseById, TS: newTs,
     TREND_STATS: newTrendStats, TREND_BY_ID: newTrendById,
     BREAKS_X: newBreaksX, BREAKS_Y: newBreaksY,
     BREAKS_X_TR: newBreaksXTr, BREAKS_Y_TR: newBreaksYTr,
-    PAL: buildPalette(cfg.corners),
+    PAL: pal,
   };
   layerCache[id] = data;
   return data;
@@ -263,12 +354,16 @@ function applyLayerData(data) {
 
 function updateLayerChrome() {
   const l = LAYERS[activeLayer];
+  document.getElementById('biv-diag-lbl-x').textContent = l.axisLabelX;
   document.getElementById('biv-diag-lbl-y').textContent = l.axisLabelY;
   document.getElementById('panel-title').textContent = MODE === 'trend' ? l.pairTitleTrend : l.pairTitle;
   document.getElementById('panel-sub').textContent = MODE === 'trend' ? l.panelSubTrend : l.panelSub;
+  document.getElementById('s-temp-lbl').textContent = MODE === 'trend' ? `trend ${l.fieldX.toLowerCase()} ${l.xUnit}/decennio` : `${l.fieldX.toLowerCase()} ${l.xUnit}`;
   document.getElementById('s-precip-lbl').textContent = MODE === 'trend' ? l.statsLblYTr : l.statsLblY;
   document.getElementById('layer-explain').innerHTML = l.explain;
-  document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.layer === activeLayer));
+  document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', (LAYERS[b.dataset.layer]?.tabGroup || b.dataset.layer) === (l.tabGroup || activeLayer)));
+  document.body.classList.toggle('layer-pf', l.tabGroup === 'pf');
+  if (l.tabGroup === 'pf' && (MODE === 'trend' || MODE === 'confronto')) setMode('livello');
 }
 
 async function switchLayer(id) {
@@ -277,6 +372,7 @@ async function switchLayer(id) {
   const data = await loadLayerData(id);
   activeLayer = id;
   applyLayerData(data);
+  buildTimeline();
   activeBiv = null;
   document.querySelectorAll('.biv-cell').forEach(c => c.classList.remove('active'));
   buildBivGrid();
@@ -287,7 +383,9 @@ async function switchLayer(id) {
   } else if (MODE === 'confronto') {
     applyCompare();
   } else {
-    setPeriod(selYear, selMonth);
+    const validYears = TS.years.map(String);
+    const yearToUse = (selYear !== 'clima' && !validYears.includes(String(selYear))) ? String(TS.years[TS.years.length - 1]) : selYear;
+    setPeriod(yearToUse, selMonth);
   }
 }
 
@@ -295,6 +393,16 @@ function setupLayerTabs() {
   document.getElementById('layer-tabs').addEventListener('click', e => {
     const btn = e.target.closest('.layer-tab-btn');
     if (btn) switchLayer(btn.dataset.layer);
+  });
+}
+
+function setupFireMetricToggle() {
+  document.getElementById('fire-metric-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('.fire-metric-btn');
+    if (!btn) return;
+    const targetLayer = `pf_${btn.dataset.metric}`;
+    document.querySelectorAll('.fire-metric-btn').forEach(b => b.classList.toggle('active', b.dataset.metric === btn.dataset.metric));
+    switchLayer(targetLayer);
   });
 }
 
@@ -315,6 +423,7 @@ async function init() {
   setupToolbar();
   setupModeToggle();
   setupLayerTabs();
+  setupFireMetricToggle();
   setupCompareUI();
   setupCompareDivider();
   updateLayerChrome();
@@ -357,17 +466,24 @@ async function init() {
 const MESI_ABBR = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 let playTimer = null;
 
+let timelineListenersAttached = false;
+
 function buildTimeline() {
   const years = document.getElementById('tl-years');
   const months = document.getElementById('tl-months');
 
+  // TS.years puo' avere buchi (es. layer pf: 2007-2025 senza 2019) -> elenca gli anni
+  // effettivamente presenti, non un range numerico continuo tra il primo e l'ultimo.
   let hy = `<div class="tl-item tl-clima" data-year="clima">Clima</div>`;
-  for (let y = TS.years[0]; y <= TS.years[TS.years.length - 1]; y++) hy += `<div class="tl-item" data-year="${y}">${y}</div>`;
+  TS.years.forEach(y => { hy += `<div class="tl-item" data-year="${y}">${y}</div>`; });
   years.innerHTML = hy;
 
   let hm = `<div class="tl-item" data-month="annua">Annua</div>`;
   MESI_ABBR.forEach((m, i) => { hm += `<div class="tl-item" data-month="${i + 1}">${m}</div>`; });
   months.innerHTML = hm;
+
+  if (timelineListenersAttached) return;
+  timelineListenersAttached = true;
 
   years.addEventListener('click', e => {
     const item = e.target.closest('.tl-item');
@@ -422,6 +538,7 @@ function computePeriodData(year, month) {
   const out = new Array(n);
 
   if (month === 'annua') {
+    const l = LAYERS[activeLayer];
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
       .map(k => TS.periods[k]).filter(Boolean);
     for (let c = 0; c < n; c++) {
@@ -429,9 +546,14 @@ function computePeriodData(year, month) {
       const vys = months.map(m => m.vy[c]).filter(v => v != null);
       const tmaxs = months.map(m => m.tmax[c]).filter(v => v != null);
       const tmins = months.map(m => m.tmin[c]).filter(v => v != null);
+      // yAggAnnual === 'const': vy e' lo stesso valore annuale ripetuto su ogni mese (es. incendi) ->
+      // media (== il valore stesso) invece di somma, altrimenti sommeremmo lo stesso dato 12 volte.
+      const vyAnnual = l.yAggAnnual === 'const'
+        ? (vys.length ? vys.reduce((a, b) => a + b, 0) / vys.length : null)
+        : (vys.length ? vys.reduce((a, b) => a + b, 0) : null);
       out[c] = buildEntry(TS.id_order[c],
         vxs.length ? vxs.reduce((a, b) => a + b, 0) / vxs.length : null,
-        vys.length ? vys.reduce((a, b) => a + b, 0) : null,
+        vyAnnual,
         tmaxs.length ? Math.max(...tmaxs) : null,
         tmins.length ? Math.min(...tmins) : null);
     }
@@ -449,14 +571,15 @@ function computePeriodData(year, month) {
 
 function buildEntry(id, vx, vy, tmax, tmin) {
   const base = BASE_BY_ID[id] || {};
+  const l = LAYERS[activeLayer];
   const cls_x = classify5(vx, BREAKS_X);
-  const cls_y = classify5(vy, BREAKS_Y);
+  const cls_y = (l.zeroClassY && vy === 0) ? 0 : classify5(vy, BREAKS_Y);
   return {
     id, nome: base.nome, prov: base.prov,
     vx: vx != null ? +vx.toFixed(2) : null,
     vy: vy != null ? +vy.toFixed(1) : null,
     tmax, tmin,
-    biv: (cls_x && cls_y) ? `${cls_x}-${cls_y}` : null,
+    biv: (cls_x && cls_y != null) ? `${cls_x}-${cls_y}` : null,
   };
 }
 
@@ -939,15 +1062,15 @@ function rankSections() {
   const l = LAYERS[activeLayer];
   if (MODE === 'trend') {
     return [
-      ['caldo', '🔥', 'Riscaldamento più forte', '°C/decennio', 'vx', 'desc', RANK_COLORS.caldo, 2],
-      ['freddo', '🥶', 'Riscaldamento più debole', '°C/decennio', 'vx', 'asc', RANK_COLORS.freddo, 2],
+      [l.rankHiX.key, l.rankHiX.icon, l.rankHiX.titleTrend, `${l.xUnit}/decennio`, 'vx', 'desc', l.rankHiX.color, l.rankHiX.decTrend],
+      [l.rankLoX.key, l.rankLoX.icon, l.rankLoX.titleTrend, `${l.xUnit}/decennio`, 'vx', 'asc', l.rankLoX.color, l.rankLoX.decTrend],
       [l.rankHi.key, l.rankHi.icon, l.rankHi.titleTrend, 'mm/decennio', 'vy', 'desc', l.rankHi.color, l.rankHi.decTrend],
       [l.rankLo.key, l.rankLo.icon, l.rankLo.titleTrend, 'mm/decennio', 'vy', 'asc', l.rankLo.color, l.rankLo.decTrend],
     ];
   }
   return [
-    ['caldo', '🔥', 'Più caldi', '°C', 'vx', 'desc', RANK_COLORS.caldo, 1],
-    ['freddo', '🥶', 'Più freddi', '°C', 'vx', 'asc', RANK_COLORS.freddo, 1],
+    [l.rankHiX.key, l.rankHiX.icon, l.rankHiX.titleLivello, l.xUnit, 'vx', 'desc', l.rankHiX.color, l.rankHiX.dec],
+    [l.rankLoX.key, l.rankLoX.icon, l.rankLoX.titleLivello, l.xUnit, 'vx', 'asc', l.rankLoX.color, l.rankLoX.dec],
     [l.rankHi.key, l.rankHi.icon, l.rankHi.titleLivello, 'mm', 'vy', 'desc', l.rankHi.color, l.rankHi.dec],
     [l.rankLo.key, l.rankLo.icon, l.rankLo.titleLivello, 'mm', 'vy', 'asc', l.rankLo.color, l.rankLo.dec],
   ];
@@ -1033,22 +1156,24 @@ function buildClassBlock(biv) {
 }
 
 function showInfo(p) {
+  const l = LAYERS[activeLayer];
   document.getElementById('i-title').innerHTML = `${esc(p.nome)} · ${esc(p.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">${esc(periodLabel())}</span>`;
   if (MODE === 'trend') {
     const sigTxt = sig => sig === true ? 'significativo (p<0.05)' : sig === false ? 'non significativo' : '—';
     document.getElementById('i-table').innerHTML = [
-      ['Trend temperatura', fmt(p.vx, 2) + ' °C/decennio'],
+      [`Trend ${l.fieldX.toLowerCase()}`, fmt(p.vx, 2) + ` ${l.xUnit}/decennio`],
       ['Significatività temp.', sigTxt(p.temp_sig)],
-      [LAYERS[activeLayer].fieldYTrend, fmt(p.vy, 1) + ' mm/decennio'],
+      [l.fieldYTrend, fmt(p.vy, 1) + ' mm/decennio'],
       ['Significatività precip.', sigTxt(p.precip_sig)],
     ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   } else {
-    document.getElementById('i-table').innerHTML = [
-      ['Temperatura media', fmt(p.vx, 1) + ' °C'],
-      ['Temperatura max', fmt(p.tmax, 1) + ' °C'],
-      ['Temperatura min', fmt(p.tmin, 1) + ' °C'],
-      [LAYERS[activeLayer].fieldY, fmt(p.vy, 0) + ' mm'],
-    ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+    const rows = [[l.fieldX, fmt(p.vx, l.xDec) + ` ${l.xUnit}`]];
+    if (l.hasMinMax) {
+      rows.push([`${l.fieldXBase} max`, fmt(p.tmax, l.xDec) + ` ${l.xUnit}`]);
+      rows.push([`${l.fieldXBase} min`, fmt(p.tmin, l.xDec) + ` ${l.xUnit}`]);
+    }
+    rows.push([l.fieldY, fmt(p.vy, l.yDec != null ? l.yDec : 0) + ' ' + (l.yUnit != null ? l.yUnit : 'mm')]);
+    document.getElementById('i-table').innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);
   document.getElementById('info').style.display = 'block';
@@ -1097,7 +1222,7 @@ function setMode(mode) {
   document.getElementById('panel-sub').textContent =
     mode === 'confronto' ? '391 comuni di Sicilia — confronto tra due periodi climatologici' :
     (mode === 'trend' ? l.panelSubTrend : l.panelSub);
-  document.getElementById('s-temp-lbl').textContent = mode === 'trend' ? 'trend temp. °C/decennio' : 'temp. media °C';
+  document.getElementById('s-temp-lbl').textContent = mode === 'trend' ? `trend ${l.fieldX.toLowerCase()} ${l.xUnit}/decennio` : `${l.fieldX.toLowerCase()} ${l.xUnit}`;
   document.getElementById('s-precip-lbl').textContent = mode === 'trend' ? l.statsLblYTr : l.statsLblY;
 
   if (prevMode === 'confronto' && mode !== 'confronto') exitCompareMode();

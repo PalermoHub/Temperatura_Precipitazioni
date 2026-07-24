@@ -540,3 +540,31 @@ body.mode-confronto #compare-rank-container { display: block; }
   .info-tab { font-size: 10.5px; padding: 9px 2px; }
 }
 
+body.layer-pf #mode-toggle {
+  display: none;
+}
+#fire-metric-toggle {
+  display: none;
+}
+body.layer-pf #fire-metric-toggle {
+  display: flex;
+}
+
+.fire-metric-toggle {
+  gap: 6px;
+  margin: 8px 0;
+}
+.fire-metric-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #ccc);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+}
+.fire-metric-btn.active {
+  background: var(--accent, #4f83a6);
+  color: #fff;
+  border-color: transparent;
+}
+

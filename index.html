@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -21,7 +22,7 @@
     <meta name="creation_Date" content="24/07/2026">
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
-	<link rel="stylesheet" href="css/app.css?v=15"/>
+	<link rel="stylesheet" href="css/app.css?v=16"/>
 
     <!-- Meta tags per social sharing pen Graph Protocol -->
     <meta property="og:url" content="https://palermohub.github.io/Temperatura_Precipitazioni/">
@@ -216,11 +217,16 @@
       <div id="layer-tabs" class="layer-tabs">
         <button class="layer-tab-btn active" data-layer="tp">Temp × Precip</button>
         <button class="layer-tab-btn" data-layer="dt">Deficit × Temp</button>
+        <button class="layer-tab-btn" data-layer="pf_area">PDSI × Incendi</button>
       </div>
       <div id="mode-toggle" class="mode-toggle">
         <button class="mode-btn active" data-mode="livello">Livello</button>
         <button class="mode-btn" data-mode="trend">Trend 1950-2025</button>
         <button class="mode-btn" data-mode="confronto">Confronto</button>
+      </div>
+      <div id="fire-metric-toggle" class="fire-metric-toggle">
+        <button class="fire-metric-btn active" data-metric="area">Area bruciata</button>
+        <button class="fire-metric-btn" data-metric="count">N. incendi</button>
       </div>
       <p class="biv-hint" id="periodo-hint"></p>
     </div>
@@ -401,7 +407,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=16"></script>
+<script src="js/app.js?v=17"></script>
 <script src="js/compare.js?v=4"></script>
 </body>
 </html>
