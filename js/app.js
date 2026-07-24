@@ -5,7 +5,7 @@
    Selettore Anno/Mese: ricolora con i dati di quel periodo specifico, classificando
    sempre sulle soglie fisse (quintili, griglia 5×5) della climatologia 1950-2025 per restare comparabile. */
 
-const REMOTE_PMTILES = 'https://gbvitrano.it/anncus/data/comuni.pmtiles';
+const REMOTE_PMTILES = 'dati/comuni.pmtiles';
 const SOURCE_LAYER = 'comuni';
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
@@ -493,7 +493,6 @@ async function init() {
     map.on('sourcedata', e => {
       if (e.sourceId === 'comuni' && e.isSourceLoaded) applyFeatureState();
     });
-
     setupHover();
   });
 }
