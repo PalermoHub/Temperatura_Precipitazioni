@@ -332,7 +332,7 @@ body.panel-closed #geo-search-area { left: 50%; }
   white-space: nowrap;
 }
 #map-toolbar button {
-  width: 32px; height: 32px;
+  width: 26px; height: 26px;
   display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid var(--border); border-radius: 50%;
   color: var(--text2); cursor: pointer; transition: all .15s; flex-shrink: 0;
@@ -361,16 +361,18 @@ body.panel-closed #geo-search-area { left: 50%; }
 .tl-row { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .tl-row-months { padding-top: 6px; border-top: 1px solid var(--border); }
 
-.tl-arrow, .tl-play {
-  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+#map-toolbar button.tl-arrow, #map-toolbar button.tl-play {
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid var(--border); color: var(--text2);
   cursor: pointer; transition: all .15s;
 }
-.tl-arrow svg { transform: rotate(90deg); }
+.tl-arrow svg { transform: rotate(90deg); width: 9px; height: 9px; }
+.tl-play svg { width: 8px; height: 8px; }
 .tl-arrow:hover, .tl-play:hover { background: var(--bg3); color: var(--text); }
 .tl-play.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.tl-arrow-sm { width: 18px; height: 18px; }
+#map-toolbar button.tl-arrow-sm { width: 13px; height: 13px; }
+.tl-arrow-sm svg { width: 7px; height: 7px; }
 
 .tl-scroll-wrap {
   overflow-y: auto; overflow-x: hidden; flex-shrink: 0;
