@@ -142,6 +142,7 @@ function destroyMap2() {
 }
 
 let CURRENT_A = [], CURRENT_A_BY_ID = {}, CURRENT_B = [], CURRENT_B_BY_ID = {};
+let CMP_A_LABEL = '', CMP_B_LABEL = '';
 
 function enterCompareMode() {
   createMap2();
@@ -173,8 +174,10 @@ function applyCompare() {
   CURRENT_B_BY_ID = {};
   CURRENT_B.forEach(p => { CURRENT_B_BY_ID[p.id] = p; });
 
-  document.getElementById('compare-chip-a').textContent = `${aFrom}–${aTo}`;
-  document.getElementById('compare-chip-b').textContent = `${bFrom}–${bTo}`;
+  CMP_A_LABEL = `${aFrom}–${aTo}`;
+  CMP_B_LABEL = `${bFrom}–${bTo}`;
+  document.getElementById('compare-chip-a').textContent = CMP_A_LABEL;
+  document.getElementById('compare-chip-b').textContent = CMP_B_LABEL;
   document.getElementById('cmp-hint').textContent =
     month === 'annua' ? 'Media annua sul range selezionato per ciascun periodo.' : `Media di ${MESI[month - 1]} sul range selezionato per ciascun periodo.`;
 
@@ -261,20 +264,20 @@ function showCompareInfo(id) {
   const delta = (x, y, dec) => (x != null && y != null) ? fmt(y - x, dec) : '—';
   document.getElementById('i-title').innerHTML = `${esc(a.nome)} · ${esc(a.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">Confronto periodi</span>`;
   document.getElementById('i-table').innerHTML = [
-    ['Temperatura A', fmt(a.vx, 1) + ' °C'],
-    ['Temperatura B', fmt(b.vx, 1) + ' °C'],
+    [`Temperatura A (${esc(CMP_A_LABEL)})`, fmt(a.vx, 1) + ' °C'],
+    [`Temperatura B (${esc(CMP_B_LABEL)})`, fmt(b.vx, 1) + ' °C'],
     ['Δ Temperatura', delta(a.vx, b.vx, 1) + ' °C'],
-    ['Precipitazione A', fmt(a.vy, 0) + ' mm'],
-    ['Precipitazione B', fmt(b.vy, 0) + ' mm'],
+    [`Precipitazione A (${esc(CMP_A_LABEL)})`, fmt(a.vy, 0) + ' mm'],
+    [`Precipitazione B (${esc(CMP_B_LABEL)})`, fmt(b.vy, 0) + ' mm'],
     ['Δ Precipitazione', delta(a.vy, b.vy, 0) + ' mm'],
   ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
-  const badge = (p, label) => {
+  const badge = (p, label, period) => {
     if (!p.biv) return '';
     const color = PAL[p.biv] || '#888';
-    return `<div class="cls-badge" style="background:${color};color:${textOnPal(color)}">${label}: ${p.biv}</div>`;
+    return `<div class="cls-badge" style="background:${color};color:${textOnPal(color)}">${label} (${esc(period)}): ${p.biv}</div>`;
   };
-  document.getElementById('i-class').innerHTML = badge(a, 'A') + badge(b, 'B');
+  document.getElementById('i-class').innerHTML = badge(a, 'A', CMP_A_LABEL) + badge(b, 'B', CMP_B_LABEL);
   document.getElementById('info').style.display = 'block';
 }
 
