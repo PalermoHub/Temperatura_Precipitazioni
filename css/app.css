@@ -197,6 +197,7 @@ body.panel-closed #br-stack { right: 20px; }
   border-bottom: 1px solid var(--border); background: var(--bg2);
 }
 .rank-hdr .rank-icon { font-size: var(--fs-3); line-height: 1; flex-shrink: 0; }
+.rank-hdr .rank-icon i, .cls-badge i { margin-right: 4px; }
 .rank-hdr-unit { margin-left: auto; font-size: var(--fs-1); font-weight: 400; font-style: italic; letter-spacing: 0; text-transform: none; color: var(--text2); opacity: .85; }
 .rank-row {
   display: flex; align-items: center; gap: 6px; padding: 5px 9px;

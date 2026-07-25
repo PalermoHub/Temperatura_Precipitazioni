@@ -9,6 +9,21 @@ const REMOTE_PMTILES = 'https://palermohub.github.io/Temperatura_Precipitazioni/
 const SOURCE_LAYER = 'comuni';
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
+// Icone FontAwesome (sostituiscono le emoji: stile coerente col resto della UI, a linea/monocolore).
+const fa = cls => `<i class="fa-solid ${cls}"></i>`;
+const FA_FIRE        = fa('fa-fire');
+const FA_SNOW        = fa('fa-snowflake');
+const FA_DROP        = fa('fa-droplet');
+const FA_SEED        = fa('fa-seedling');
+const FA_SUN         = fa('fa-sun');
+const FA_TEMP_HALF   = fa('fa-temperature-half');
+const FA_RAIN        = fa('fa-cloud-rain');
+const FA_ARROW_UP    = fa('fa-arrow-up');
+const FA_ARROW_DOWN  = fa('fa-arrow-down');
+const FA_ARROW_RIGHT = fa('fa-arrow-right');
+const FA_ARROW_TREND_UP = fa('fa-arrow-trend-up');
+const FA_NONE        = '<i class="fa-regular fa-square"></i>';
+
 // Palette semantica a 4 vertici (interpolazione bilineare), scelta per leggibilità climatica:
 // freddo+secco=steppa/tundra, caldo+secco=deserto, freddo+piovoso=alpino, caldo+piovoso=subtropicale.
 // Sostituisce il precedente blend "multiply" (arancio×blu), che faceva collassare il vertice
@@ -19,9 +34,9 @@ const CORNER_COLD_WET  = [79, 131, 166];  // #4f83a6 — blu/alpino
 const CORNER_HOT_WET   = [74, 140, 95];   // #4a8c5f — verde/subtropicale
 // Etichette asse Y per il layer Deficit idrico climatico (def, mm — PET-AET)
 const DEF_LABELS = ['', 'molto umido', 'umido', 'nella media', 'stress idrico', 'stress idrico estremo'];
-const DEF_ICON = ['', '💧', '💧', '🌱', '🏜️', '🔥🏜️'];
+const DEF_ICON = ['', FA_DROP, FA_DROP, FA_SEED, FA_SUN, FA_FIRE];
 const DEF_LABELS_TR = ['', 'forte calo stress idrico', 'calo stress idrico', 'trend stabile', 'aumento stress idrico', 'forte aumento stress idrico'];
-const DEF_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
+const DEF_ICON_TR = ['', FA_ARROW_DOWN, FA_ARROW_DOWN, FA_ARROW_RIGHT, FA_ARROW_UP, FA_ARROW_UP];
 
 // Colori classifiche: univariati, uno per variabile pura (non i vertici bivariati sopra,
 // che mescolano temp+precip e darebbero logica sbagliata a un ranking mono-variabile).
@@ -48,23 +63,23 @@ function buildPalette(corners, n = 5) {
 
 const TEMP_LABELS = ['', 'molto freddo', 'freddo', 'nella media', 'caldo', 'molto caldo'];
 const PRECIP_LABELS = ['', 'molto secco', 'secco', 'nella media', 'piovoso', 'molto piovoso'];
-const TEMP_ICON = ['', '🥶', '🌡️', '🌡️', '☀️', '🔥'];
-const PRECIP_ICON = ['', '🏜️', '🏜️', '💧', '🌧️', '🌧️'];
+const TEMP_ICON = ['', FA_SNOW, FA_TEMP_HALF, FA_TEMP_HALF, FA_SUN, FA_FIRE];
+const PRECIP_ICON = ['', FA_SUN, FA_SUN, FA_DROP, FA_RAIN, FA_RAIN];
 // Etichette per la modalita' Trend (pendenza OLS 1950-2025, non livello assoluto)
 const TEMP_LABELS_TR = ['', 'riscaldamento debole', 'riscaldamento lieve', 'riscaldamento medio', 'riscaldamento forte', 'riscaldamento molto forte'];
 const PRECIP_LABELS_TR = ['', 'forte calo piogge', 'calo piogge', 'trend stabile', 'aumento piogge', 'forte aumento piogge'];
-const TEMP_ICON_TR = ['', '↗️', '↗️', '⬆️', '🔥', '🔥'];
-const PRECIP_ICON_TR = ['', '⬇️', '⬇️', '➡️', '⬆️', '⬆️'];
+const TEMP_ICON_TR = ['', FA_ARROW_TREND_UP, FA_ARROW_TREND_UP, FA_ARROW_UP, FA_FIRE, FA_FIRE];
+const PRECIP_ICON_TR = ['', FA_ARROW_DOWN, FA_ARROW_DOWN, FA_ARROW_RIGHT, FA_ARROW_UP, FA_ARROW_UP];
 
 // Etichette asse X per il layer PDSI x Incendi (PDSI = Palmer Drought Severity Index,
 // negativo = siccita', positivo = surplus idrico)
 const PDSI_LABELS = ['', 'siccità estrema', 'siccità moderata', 'nella norma', 'umido', 'molto umido'];
-const PDSI_ICON = ['', '🏜️', '🏜️', '🌱', '💧', '💧'];
+const PDSI_ICON = ['', FA_SUN, FA_SUN, FA_SEED, FA_DROP, FA_DROP];
 // Etichette asse Y: area bruciata o conteggio incendi (0 = classe dedicata "nessun incendio")
 const FIRE_LABELS_AREA = ['nessun incendio', 'area minima', 'area contenuta', 'area media', 'area estesa', 'area molto estesa'];
-const FIRE_ICON_AREA = ['⬜', '🔥', '🔥', '🔥', '🔥🔥', '🔥🔥'];
+const FIRE_ICON_AREA = [FA_NONE, FA_FIRE, FA_FIRE, FA_FIRE, FA_FIRE, FA_FIRE];
 const FIRE_LABELS_COUNT = ['nessun incendio', 'pochi eventi', 'alcuni eventi', 'eventi nella media', 'molti eventi', 'moltissimi eventi'];
-const FIRE_ICON_COUNT = ['⬜', '🔥', '🔥', '🔥', '🔥🔥', '🔥🔥'];
+const FIRE_ICON_COUNT = [FA_NONE, FA_FIRE, FA_FIRE, FA_FIRE, FA_FIRE, FA_FIRE];
 const FIRE_ZERO_COLOR = '#c9c9c9'; // grigio neutro, indipendente dal PDSI
 
 // Anomalia estiva: rampa monocromatica rossa (5 classi legenda/ranking, 3 classi colore mappa)
@@ -78,7 +93,7 @@ function buildAnomalyPalette(n) {
   return pal;
 }
 const ANOMALY_LABELS = ['', 'anomalia lieve', 'anomalia moderata', 'anomalia sensibile', 'anomalia forte', 'anomalia estrema'];
-const ANOMALY_ICON = ['', '🌡️', '🌡️', '🔥', '🔥', '🔥'];
+const ANOMALY_ICON = ['', FA_TEMP_HALF, FA_TEMP_HALF, FA_FIRE, FA_FIRE, FA_FIRE];
 
 const LAYERS = {
   tp: {
@@ -95,15 +110,15 @@ const LAYERS = {
     axisLabelX: '← Temperatura',
     xLabels: TEMP_LABELS, xIcon: TEMP_ICON, xLabelsTr: TEMP_LABELS_TR, xIconTr: TEMP_ICON_TR,
     fieldX: 'Temperatura media', fieldXBase: 'Temperatura', xUnit: '°C', xDec: 1,
-    rankHiX: { key: 'caldo', icon: '🔥', color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
-    rankLoX: { key: 'freddo', icon: '🥶', color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
+    rankHiX: { key: 'caldo', icon: FA_FIRE, color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
+    rankLoX: { key: 'freddo', icon: FA_SNOW, color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
     hasMinMax: true,
     pairTitle: 'Temperatura × Precipitazione',
     pairTitleTrend: 'Trend Temperatura × Precipitazione',
     panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025',
     panelSubTrend: '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)',
-    rankHi: { key: 'piovoso', icon: '💧', color: '#1f9c8a', titleLivello: 'Più piovosi', titleTrend: 'Piogge in aumento', dec: 0, decTrend: 1 },
-    rankLo: { key: 'arido', icon: '🏜️', color: '#c9974f', titleLivello: 'Più aridi', titleTrend: 'Piogge in calo', dec: 0, decTrend: 1 },
+    rankHi: { key: 'piovoso', icon: FA_DROP, color: '#1f9c8a', titleLivello: 'Più piovosi', titleTrend: 'Piogge in aumento', dec: 0, decTrend: 1 },
+    rankLo: { key: 'arido', icon: FA_SUN, color: '#c9974f', titleLivello: 'Più aridi', titleTrend: 'Piogge in calo', dec: 0, decTrend: 1 },
     explain: `<p>Questa mappa incrocia temperatura e precipitazione media per capire, a colpo d'occhio, se un comune è caldo/freddo e secco/piovoso rispetto agli altri della Sicilia.</p>
 <p>La pioggia dice solo quanta acqua <em>arriva</em>, non quanta ne resta davvero disponibile. Due comuni con la stessa piovosità possono avere uno stress idrico molto diverso: uno fresco e riparato dal vento trattiene l'acqua nel suolo, uno caldo, ventoso e assolato ne perde di più per evaporazione.</p>
 <p>Incrociare temperatura e pioggia dà un'idea approssimativa di questo effetto — più caldo, in genere, significa più acqua persa — ma è comunque una stima indiretta. Per il dato preciso (quanta acqua manca davvero) usa la scheda <strong>Deficit × Temp</strong>.</p>
@@ -126,15 +141,15 @@ const LAYERS = {
     axisLabelX: '← Temperatura',
     xLabels: TEMP_LABELS, xIcon: TEMP_ICON, xLabelsTr: TEMP_LABELS_TR, xIconTr: TEMP_ICON_TR,
     fieldX: 'Temperatura media', fieldXBase: 'Temperatura', xUnit: '°C', xDec: 1,
-    rankHiX: { key: 'caldo', icon: '🔥', color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
-    rankLoX: { key: 'freddo', icon: '🥶', color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
+    rankHiX: { key: 'caldo', icon: FA_FIRE, color: RANK_COLORS.caldo, titleLivello: 'Più caldi', titleTrend: 'Riscaldamento più forte', dec: 1, decTrend: 2 },
+    rankLoX: { key: 'freddo', icon: FA_SNOW, color: RANK_COLORS.freddo, titleLivello: 'Più freddi', titleTrend: 'Riscaldamento più debole', dec: 1, decTrend: 2 },
     hasMinMax: true,
     pairTitle: 'Temperatura × Deficit idrico',
     pairTitleTrend: 'Trend Temperatura × Deficit idrico',
     panelSub: '391 comuni di Sicilia — climatologia TerraClimate 1950-2025 (def = PET−AET)',
     panelSubTrend: '391 comuni di Sicilia — trend OLS 1950-2025 (°C/decennio, mm/decennio)',
-    rankHi: { key: 'stress_alto', icon: '🏜️', color: '#a85c3b', titleLivello: 'Maggior stress idrico', titleTrend: 'Stress idrico in aumento', dec: 0, decTrend: 1 },
-    rankLo: { key: 'stress_basso', icon: '💧', color: '#4f8f8a', titleLivello: 'Minor stress idrico', titleTrend: 'Stress idrico in calo', dec: 0, decTrend: 1 },
+    rankHi: { key: 'stress_alto', icon: FA_SUN, color: '#a85c3b', titleLivello: 'Maggior stress idrico', titleTrend: 'Stress idrico in aumento', dec: 0, decTrend: 1 },
+    rankLo: { key: 'stress_basso', icon: FA_DROP, color: '#4f8f8a', titleLivello: 'Minor stress idrico', titleTrend: 'Stress idrico in calo', dec: 0, decTrend: 1 },
     explain: `<p>Questa mappa incrocia temperatura e deficit idrico climatico per mostrare lo stress idrico reale di ogni comune, non solo quanto piove.</p>
 <p>Il <strong>deficit idrico</strong> (def = PET − AET) misura quanta acqua manca davvero rispetto a quella che l'atmosfera "vorrebbe" far evaporare, dato calore, vento e sole di ogni comune. È già un indice di sintesi: mette insieme pioggia, temperatura, vento e radiazione solare in un solo numero — a differenza della pioggia grezza, che va sempre interpretata a mente insieme alla temperatura.</p>
 <p>Un comune "caldo e piovoso" sembra innocuo nella mappa Temp × Precip, ma se ha vento forte e cieli sereni può nascondere un deficit idrico reale, non visibile guardando solo quanto piove.</p>
@@ -156,10 +171,10 @@ const LAYERS = {
     yLabels: FIRE_LABELS_AREA, yIcon: FIRE_ICON_AREA, yLabelsTr: FIRE_LABELS_AREA, yIconTr: FIRE_ICON_AREA,
     fieldY: 'Area bruciata', fieldYTrend: 'Trend area bruciata', yUnit: 'ha', yDec: 1,
     statsLblY: 'area media ha/anno', statsLblYTr: 'trend area ha/decennio',
-    rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
-    rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
-    rankHi: { key: 'area_alta', icon: '🔥', color: '#7a2020', titleLivello: 'Più area bruciata', dec: 0 },
-    rankLo: { key: 'area_bassa', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno area bruciata', dec: 0 },
+    rankHiX: { key: 'secco', icon: FA_SUN, color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
+    rankLoX: { key: 'umido', icon: FA_DROP, color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
+    rankHi: { key: 'area_alta', icon: FA_FIRE, color: '#7a2020', titleLivello: 'Più area bruciata', dec: 0 },
+    rankLo: { key: 'area_bassa', icon: FA_NONE, color: '#8a8a8a', titleLivello: 'Meno area bruciata', dec: 0 },
     hasMinMax: false,
     pairTitle: 'PDSI × Area bruciata',
     pairTitleTrend: 'Trend PDSI × Area bruciata',
@@ -186,10 +201,10 @@ const LAYERS = {
     yLabels: FIRE_LABELS_COUNT, yIcon: FIRE_ICON_COUNT, yLabelsTr: FIRE_LABELS_COUNT, yIconTr: FIRE_ICON_COUNT,
     fieldY: 'N. incendi', fieldYTrend: 'Trend n. incendi', yUnit: '', yDec: 1,
     statsLblY: 'eventi medi/anno', statsLblYTr: 'trend eventi/decennio',
-    rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
-    rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
-    rankHi: { key: 'eventi_alti', icon: '🔥', color: '#7a2020', titleLivello: 'Più incendi', dec: 0 },
-    rankLo: { key: 'eventi_bassi', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno incendi', dec: 0 },
+    rankHiX: { key: 'secco', icon: FA_SUN, color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
+    rankLoX: { key: 'umido', icon: FA_DROP, color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
+    rankHi: { key: 'eventi_alti', icon: FA_FIRE, color: '#7a2020', titleLivello: 'Più incendi', dec: 0 },
+    rankLo: { key: 'eventi_bassi', icon: FA_NONE, color: '#8a8a8a', titleLivello: 'Meno incendi', dec: 0 },
     hasMinMax: false,
     pairTitle: 'PDSI × N. incendi',
     pairTitleTrend: 'Trend PDSI × N. incendi',
@@ -209,8 +224,8 @@ const LAYERS = {
     axisLabelX: 'Anomalia estate (giu-lug-ago) vs 1950-1985',
     xLabels: ANOMALY_LABELS, xIcon: ANOMALY_ICON, xLabelsTr: ANOMALY_LABELS, xIconTr: ANOMALY_ICON,
     fieldX: 'Anomalia estiva', fieldXBase: 'Anomalia', xUnit: '°C', xDec: 2,
-    rankHiX: { key: 'piu_caldo', icon: '🔥', color: '#b7472e', titleLivello: 'Più riscaldati', titleTrend: 'Riscaldamento più forte', dec: 2, decTrend: 2 },
-    rankLoX: { key: 'meno_caldo', icon: '🌡️', color: '#f3b995', titleLivello: 'Meno riscaldati', titleTrend: 'Riscaldamento più debole', dec: 2, decTrend: 2 },
+    rankHiX: { key: 'piu_caldo', icon: FA_FIRE, color: '#b7472e', titleLivello: 'Più riscaldati', titleTrend: 'Riscaldamento più forte', dec: 2, decTrend: 2 },
+    rankLoX: { key: 'meno_caldo', icon: FA_TEMP_HALF, color: '#f3b995', titleLivello: 'Meno riscaldati', titleTrend: 'Riscaldamento più debole', dec: 2, decTrend: 2 },
     hasMinMax: false,
     pairTitle: 'Anomalia estiva',
     pairTitleTrend: 'Trend anomalia estiva',
@@ -1076,7 +1091,7 @@ function buildBivGrid() {
   grid.classList.toggle('single-var', !!l.singleVar);
 
   if (l.singleVar) {
-    const { temp: T, tempIcon: TI } = curLabels();
+    const { temp: T } = curLabels();
     const breaksX = MODE === 'trend' ? BREAKS_X_TR : (anomalyZMode ? BREAKS_X_Z : BREAKS_X);
     const unit = MODE === 'trend' ? `${l.xUnit}/decennio` : (anomalyZMode ? 'σ' : l.xUnit);
     let html = '';
@@ -1086,7 +1101,8 @@ function buildBivGrid() {
       const range = lo == null ? `≤ ${fmt(hi, 1)} ${unit}`
         : hi == null ? `> ${fmt(lo, 1)} ${unit}`
         : `${fmt(lo, 1)}–${fmt(hi, 1)} ${unit}`;
-      const title = `${TI[tx]} ${capitalize(T[tx])} (${range})`;
+      // title e' un attributo HTML nativo (tooltip del browser): niente markup <i>, solo testo.
+      const title = `${capitalize(T[tx])} (${range})`;
       html += `<div class="biv-cell" data-biv="${tx}" style="background:${PAL[String(tx)]}" title="${title}"></div>`;
     }
     grid.innerHTML = html;
