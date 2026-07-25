@@ -440,7 +440,7 @@ body.panel-closed #geo-search-area { left: 50%; }
 /* ── LAYER TABS (Temp×Precip / Deficit×Temp) ───────────────────────────── */
 .layer-tabs {
   display: flex; gap: 0; border-bottom: 1px solid var(--border);
-  margin-bottom: 10px;
+  flex-shrink: 0; padding: 8px 14px 0; margin: 0;
 }
 .layer-tab-btn {
   border: none; background: transparent; color: var(--text2);
