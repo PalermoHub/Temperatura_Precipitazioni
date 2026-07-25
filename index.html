@@ -7,6 +7,11 @@
 
 
 
+
+
+
+
+
 <title>Mappa Bivariata temperatura e precipitazioni e deficit idrico  Sicilia 1950-2025 | Comuni | OpenDataSicilia</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous"/>
@@ -23,7 +28,7 @@
     <meta name="creation_Date" content="24/07/2026">
     <link rel="shortcut icon" href="img/favicon.ico"/>
     <link rel="icon" href="img/favicon.png" type="image/png"/>		
-	<link rel="stylesheet" href="css/app.css"/>
+	<link rel="stylesheet" href="css/app.css?v=20260725h"/>
 
     <!-- Meta tags per social sharing pen Graph Protocol -->
     <meta property="og:url" content="https://palermohub.github.io/Temperatura_Precipitazioni/">
@@ -236,25 +241,27 @@
 
     <div class="fsec" id="compare-panel">
       <h3>Periodi a confronto</h3>
-      <div class="cmp-period-row">
-        <label>Periodo A</label>
-        <div class="cmp-year-pair">
-          <select id="cmp-a-from"></select>
-          <span>–</span>
-          <select id="cmp-a-to"></select>
+      <div class="cmp-periods-row">
+        <div class="cmp-period-col">
+          <label>Periodo A</label>
+          <div class="cmp-year-pair">
+            <div class="cmp-scroll-wrap"><div class="tl-scroll" id="cmp-a-from"></div></div>
+            <span>–</span>
+            <div class="cmp-scroll-wrap"><div class="tl-scroll" id="cmp-a-to"></div></div>
+          </div>
         </div>
-      </div>
-      <div class="cmp-period-row">
-        <label>Periodo B</label>
-        <div class="cmp-year-pair">
-          <select id="cmp-b-from"></select>
-          <span>–</span>
-          <select id="cmp-b-to"></select>
+        <div class="cmp-period-col">
+          <label>Periodo B</label>
+          <div class="cmp-year-pair">
+            <div class="cmp-scroll-wrap"><div class="tl-scroll" id="cmp-b-from"></div></div>
+            <span>–</span>
+            <div class="cmp-scroll-wrap"><div class="tl-scroll" id="cmp-b-to"></div></div>
+          </div>
         </div>
-      </div>
-      <div class="cmp-period-row">
-        <label>Mese</label>
-        <select id="cmp-month"><option value="annua">Annua</option></select>
+        <div class="cmp-period-col cmp-period-col-month">
+          <label>Mese</label>
+          <div class="cmp-scroll-wrap cmp-scroll-wrap-month"><div class="tl-scroll" id="cmp-month"></div></div>
+        </div>
       </div>
       <button id="cmp-apply">Applica confronto</button>
       <p class="biv-hint" id="cmp-hint"></p>
@@ -417,7 +424,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=20260725g"></script>
-<script src="js/compare.js?v=20260725g"></script>
+<script src="js/app.js?v=20260725h"></script>
+<script src="js/compare.js?v=20260725h"></script>
 </body>
 </html>

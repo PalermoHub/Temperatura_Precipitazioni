@@ -43,26 +43,28 @@ function buildCompareSelects() {
   CMP_DEFAULT_A = { from: first, to: Math.min(first + 19, last) };
   CMP_DEFAULT_B = { from: Math.max(last - 19, first), to: last };
 
-  function fillYearSelect(sel, selected) {
-    sel.innerHTML = '';
+  function fillYearList(el, selected) {
+    let h = '';
     for (let y = first; y <= last; y++) {
-      const opt = document.createElement('option');
-      opt.value = y; opt.textContent = y;
-      if (y === selected) opt.selected = true;
-      sel.appendChild(opt);
+      h += `<div class="tl-item${y === selected ? ' active' : ''}" data-year="${y}">${y}</div>`;
     }
+    el.innerHTML = h;
+    const active = el.querySelector('.active');
+    if (active) active.scrollIntoView({ block: 'center' });
   }
-  fillYearSelect(document.getElementById('cmp-a-from'), CMP_DEFAULT_A.from);
-  fillYearSelect(document.getElementById('cmp-a-to'), CMP_DEFAULT_A.to);
-  fillYearSelect(document.getElementById('cmp-b-from'), CMP_DEFAULT_B.from);
-  fillYearSelect(document.getElementById('cmp-b-to'), CMP_DEFAULT_B.to);
+  fillYearList(document.getElementById('cmp-a-from'), CMP_DEFAULT_A.from);
+  fillYearList(document.getElementById('cmp-a-to'), CMP_DEFAULT_A.to);
+  fillYearList(document.getElementById('cmp-b-from'), CMP_DEFAULT_B.from);
+  fillYearList(document.getElementById('cmp-b-to'), CMP_DEFAULT_B.to);
 
-  const monthSel = document.getElementById('cmp-month');
-  MESI.forEach((m, i) => {
-    const opt = document.createElement('option');
-    opt.value = i + 1; opt.textContent = m;
-    monthSel.appendChild(opt);
-  });
+  let hm = `<div class="tl-item active" data-month="annua">Annua</div>`;
+  MESI.forEach((m, i) => { hm += `<div class="tl-item" data-month="${i + 1}">${m}</div>`; });
+  document.getElementById('cmp-month').innerHTML = hm;
+}
+
+function getCmpValue(id, attr) {
+  const active = document.querySelector(`#${id} .tl-item.active`);
+  return active ? active.dataset[attr] : null;
 }
 
 let map2 = null;
@@ -159,11 +161,11 @@ function exitCompareMode() {
 }
 
 function applyCompare() {
-  const aFrom = +document.getElementById('cmp-a-from').value;
-  const aTo = +document.getElementById('cmp-a-to').value;
-  const bFrom = +document.getElementById('cmp-b-from').value;
-  const bTo = +document.getElementById('cmp-b-to').value;
-  const monthSel = document.getElementById('cmp-month').value;
+  const aFrom = +getCmpValue('cmp-a-from', 'year');
+  const aTo = +getCmpValue('cmp-a-to', 'year');
+  const bFrom = +getCmpValue('cmp-b-from', 'year');
+  const bTo = +getCmpValue('cmp-b-to', 'year');
+  const monthSel = getCmpValue('cmp-month', 'month');
   const month = monthSel === 'annua' ? 'annua' : +monthSel;
 
   const applyBtn = document.getElementById('cmp-apply');
@@ -212,13 +214,24 @@ function applyMap2FeatureState() {
 function setupCompareUI() {
   document.getElementById('cmp-apply').addEventListener('click', applyCompare);
   ['cmp-a-from', 'cmp-a-to', 'cmp-b-from', 'cmp-b-to'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-      const aFrom = +document.getElementById('cmp-a-from').value;
-      const aTo = +document.getElementById('cmp-a-to').value;
-      const bFrom = +document.getElementById('cmp-b-from').value;
-      const bTo = +document.getElementById('cmp-b-to').value;
+    const el = document.getElementById(id);
+    el.addEventListener('click', e => {
+      const item = e.target.closest('.tl-item');
+      if (!item) return;
+      el.querySelectorAll('.tl-item').forEach(it => it.classList.remove('active'));
+      item.classList.add('active');
+      const aFrom = +getCmpValue('cmp-a-from', 'year');
+      const aTo = +getCmpValue('cmp-a-to', 'year');
+      const bFrom = +getCmpValue('cmp-b-from', 'year');
+      const bTo = +getCmpValue('cmp-b-to', 'year');
       document.getElementById('cmp-apply').disabled = aFrom > aTo || bFrom > bTo;
     });
+  });
+  document.getElementById('cmp-month').addEventListener('click', e => {
+    const item = e.target.closest('.tl-item');
+    if (!item) return;
+    document.querySelectorAll('#cmp-month .tl-item').forEach(it => it.classList.remove('active'));
+    item.classList.add('active');
   });
 }
 
