@@ -325,11 +325,12 @@ body.panel-closed #geo-search-area { left: 50%; }
 
 /* ── MAP TOOLBAR ─────────────────────────────────────────────────────── */
 #map-toolbar {
-  position: fixed; top: 80px; left: 20px;
+  position: fixed; top: 80px; left: 15px;
   z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 8px;
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: 28px; padding: 14px 7px; box-shadow: var(--shadow);
   white-space: nowrap;
+  width: 50px;
 }
 #map-toolbar button {
   width: 26px; height: 26px;
@@ -383,14 +384,14 @@ body.panel-closed #geo-search-area { left: 50%; }
 .tl-scroll-wrap::-webkit-scrollbar { display: none; }
 .tl-scroll { display: flex; flex-direction: column; gap: 4px; height: max-content; }
 .tl-item {
-  padding: 4px 9px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  padding: 2px 4px; border-radius: 12px; font-size: 11px; font-weight: 600;
   color: var(--text2); cursor: pointer; white-space: nowrap; transition: all .15s;
   border: 1px solid transparent; text-align: center;
 }
 .tl-item:hover { background: var(--bg3); color: var(--text); }
 .tl-item.active { background: var(--accent); color: #fff; }
 .tl-item.tl-clima { border-color: var(--border); font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
-.tl-row-months .tl-item { font-size: 10px; padding: 3px 8px; }
+.tl-row-months .tl-item { font-size: 10px; padding: 2px 4x; }
 
 /* ── LAYER TABS (Temp×Precip / Deficit×Temp) ───────────────────────────── */
 .layer-tabs {
