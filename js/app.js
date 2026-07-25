@@ -1719,8 +1719,18 @@ function setupInfoModal() {
       modal.querySelectorAll('.info-panel').forEach((p) => p.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('itab-' + tab.dataset.itab).classList.add('active');
+      updateToTop();
     });
   });
+
+  const toTop = document.getElementById('info-totop');
+  function activePanel() { return modal.querySelector('.info-panel.active'); }
+  function updateToTop() {
+    const p = activePanel();
+    toTop.classList.toggle('show', !!p && p.scrollTop > 200);
+  }
+  modal.querySelectorAll('.info-panel').forEach((p) => p.addEventListener('scroll', updateToTop));
+  toTop.addEventListener('click', () => { const p = activePanel(); if (p) p.scrollTo({ top: 0, behavior: 'smooth' }); });
 }
 
 function setupToolbar() {
