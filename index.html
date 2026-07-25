@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+
+
+
 <title>Mappa Bivariata temperatura e precipitazioni e deficit idrico  Sicilia 1950-2025 | Comuni | OpenDataSicilia</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous"/>
@@ -49,6 +53,7 @@
 
 <div id="map"></div>
 <div id="map2"></div>
+<div id="comune-tooltip"></div>
 <div id="map-loader"><div class="map-loader-spinner"></div><span>Caricamento dati...</span></div>
 <div id="compare-divider">
   <div id="compare-chip-a" class="compare-chip"></div>
@@ -200,6 +205,7 @@
   <h3 id="i-title"></h3>
   <table id="i-table"></table>
   <div id="i-class"></div>
+  <div id="i-chart"></div>
 </div>
 
 <div id="panel">
@@ -217,7 +223,7 @@
         <button class="layer-tab-btn" data-layer="pf_area">PDSI × Incendi</button>
       </div>
       <div id="mode-toggle" class="mode-toggle">
-        <button class="mode-btn active" data-mode="livello">Livello</button>
+        <button class="mode-btn active" data-mode="livello">Valori annui</button>
         <button class="mode-btn" data-mode="trend">Trend 1950-2025</button>
         <button class="mode-btn" data-mode="confronto">Confronto</button>
       </div>
@@ -271,6 +277,7 @@
         <div class="biv-diag-lbl biv-diag-lbl-y" id="biv-diag-lbl-y">Precipitazione →</div>
       </div>
       <p class="biv-hint">Clic su una cella per isolare la classe. Quintili su tutti i 391 comuni.</p>
+      <div id="biv-trend-chart"></div>
     </div>
 
     <hr class="sep"/>
@@ -289,6 +296,7 @@
 
     <div class="fsec">
       <h3>Classifiche</h3>
+      <p class="biv-hint" id="rank-hint"></p>
       <div id="rank-container"></div>
       <div id="compare-stats" class="stats-grid"></div>
       <div id="compare-rank-container"></div>
@@ -351,7 +359,7 @@
 
         <h3 class="analisi-h3">Modalità (pannello di destra)</h3>
         <ul class="analisi-list">
-          <li><strong>Livello</strong> — la mappa bivariata classica, per il mese/anno selezionato nella timeline in basso</li>
+          <li><strong>Valori annui</strong> — la mappa bivariata classica, per il mese/anno selezionato nella timeline in basso</li>
           <li><strong>Trend 1950-2025</strong> — mostra dove il riscaldamento è più marcato e dove i regimi di pioggia/deficit stanno cambiando di più</li>
           <li><strong>Confronto</strong> — doppia mappa con divisore trascinabile per confrontare due periodi diversi</li>
         </ul>
@@ -409,7 +417,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=20260725b"></script>
-<script src="js/compare.js?v=20260725b"></script>
+<script src="js/app.js?v=20260725g"></script>
+<script src="js/compare.js?v=20260725g"></script>
 </body>
 </html>

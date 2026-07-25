@@ -389,6 +389,7 @@ function updateLayerChrome() {
   document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', (LAYERS[b.dataset.layer]?.tabGroup || b.dataset.layer) === (l.tabGroup || activeLayer)));
   document.body.classList.toggle('layer-pf', l.tabGroup === 'pf');
   if (l.tabGroup === 'pf' && (MODE === 'trend' || MODE === 'confronto')) setMode('livello');
+  renderBivTrendChart();
 }
 
 async function switchLayer(id) {
@@ -1081,6 +1082,7 @@ function applyFilters() {
   applyFeatureState();
   updateStats();
   buildRanking();
+  renderBivTrendChart();
 }
 
 function currentSubset() {
@@ -1126,6 +1128,19 @@ function buildRanking() {
   const container = document.getElementById('rank-container');
   container.innerHTML = '';
 
+  const l = LAYERS[activeLayer];
+  const hintEl = document.getElementById('rank-hint');
+  if (hintEl) {
+    const xWord = l.xUnit === '°C' ? 'media' : (l.xUnit === 'indice' ? 'media' : 'media');
+    let yWord;
+    if (selYear === 'clima') yWord = 'media annua (climatologia)';
+    else if (selMonth === 'annua') yWord = 'totale annuo';
+    else yWord = 'totale del mese';
+    hintEl.textContent = MODE === 'trend'
+      ? 'Valori: variazione media per decennio (regressione lineare 1950-2025).'
+      : `Valori: ${l.fieldX.toLowerCase()} = ${xWord} del periodo · pioggia/mm = ${yWord}.`;
+  }
+
   function section(cat, icon, title, unit, key, dir, color, dec) {
     const sorted = [...sub].filter(p => p[key] != null).sort((a, b) => dir === 'desc' ? b[key] - a[key] : a[key] - b[key]);
     const top = sorted.slice(0, 5);
@@ -1166,6 +1181,7 @@ function flyToComune(id) {
 function setupHover() {
   const canvas = map.getCanvas();
   const infoEl = document.getElementById('info');
+  const tooltipEl = document.getElementById('comune-tooltip');
   let hoveredId = null;
   map.on('mousemove', 'comuni-fill', e => {
     if (!e.features.length) return;
@@ -1175,6 +1191,14 @@ function setupHover() {
       const f = ['==', ['get', 'pro_com_t'], id];
       map.setFilter('comuni-hover', f);
       map.setFilter('comuni-hover-halo', f);
+      if (LAYERS[activeLayer].tabGroup === 'pf' && MODE === 'livello') renderBivTrendChart(id);
+    }
+    const nome = (BASE_BY_ID[id] || CURRENT_BY_ID[id] || {}).nome;
+    if (nome) {
+      tooltipEl.textContent = nome;
+      tooltipEl.style.display = 'block';
+      tooltipEl.style.left = e.point.x + 'px';
+      tooltipEl.style.top = e.point.y + 'px';
     }
     if (MODE === 'confronto') {
       canvas.style.cursor = 'pointer';
@@ -1189,7 +1213,9 @@ function setupHover() {
   map.on('mouseleave', 'comuni-fill', () => {
     canvas.style.cursor = '';
     infoEl.style.display = 'none';
+    tooltipEl.style.display = 'none';
     hoveredId = null;
+    if (LAYERS[activeLayer].tabGroup === 'pf' && MODE === 'livello') renderBivTrendChart();
     map.setFilter('comuni-hover', ['==', ['get', 'pro_com_t'], '']);
     map.setFilter('comuni-hover-halo', ['==', ['get', 'pro_com_t'], '']);
   });
@@ -1213,6 +1239,135 @@ function buildClassBlock(biv) {
     + `<div class="cls-desc">${desc}</div>`;
 }
 
+function tsIndexFor(id) {
+  if (!TS.__idIdx) {
+    TS.__idIdx = new Map();
+    TS.id_order.forEach((cid, i) => TS.__idIdx.set(cid, i));
+  }
+  return TS.__idIdx.has(id) ? TS.__idIdx.get(id) : null;
+}
+
+function buildFireChart(p) {
+  const l = LAYERS[activeLayer];
+  if (l.tabGroup !== 'pf' || MODE !== 'livello' || !TS || !TS.years) return '';
+  const idx = tsIndexFor(p.id);
+  if (idx == null) return '';
+  const years = TS.years;
+  const vals = years.map(y => {
+    const per = TS.periods[`${y}-01`];
+    const v = per ? per.vy[idx] : null;
+    return v == null ? 0 : v;
+  });
+  const max = Math.max(1, ...vals);
+  const w = 232, h = 54, padL = 2, padR = 2, padB = 11, padT = 3;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  const n = vals.length, bw = plotW / n;
+  const bars = vals.map((v, i) => {
+    const bh = (v / max) * plotH;
+    const x = padL + i * bw;
+    const y = padT + (plotH - bh);
+    const isCur = MODE === 'livello' && selYear !== 'clima' && Number(selYear) === years[i];
+    return `<rect class="i-chart-bar${isCur ? ' cur' : ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${Math.max(bh, 0.5).toFixed(1)}" rx="1"><title>${years[i]}: ${fmt(v, l.yDec != null ? l.yDec : 0)} ${l.yUnit || ''}</title></rect>`;
+  }).join('');
+  return `<div class="i-chart-title">Andamento ${esc(l.fieldY.toLowerCase())} ${years[0]}-${years[years.length - 1]}</div>
+<svg class="i-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+  ${bars}
+  <text x="${padL}" y="${h - 1}" class="i-chart-lbl">${years[0]}</text>
+  <text x="${w - padR}" y="${h - 1}" class="i-chart-lbl" text-anchor="end">${years[years.length - 1]}</text>
+</svg>`;
+}
+
+const BIV_TREND_W = 232, BIV_TREND_H = 60;
+const BIV_TREND_PAD = { l: 2, r: 2, t: 4, b: 11 };
+const BIV_TREND_PLOT_W = BIV_TREND_W - BIV_TREND_PAD.l - BIV_TREND_PAD.r;
+const BIV_TREND_PLOT_H = BIV_TREND_H - BIV_TREND_PAD.t - BIV_TREND_PAD.b;
+
+function renderBivTrendChart(hoverId) {
+  const el = document.getElementById('biv-trend-chart');
+  const l = LAYERS[activeLayer];
+  if (l.tabGroup !== 'pf' || !TS || !TS.years || MODE === 'confronto') { el.classList.remove('show'); el.innerHTML = ''; return; }
+
+  let idxs, scope, isSingle = false;
+  if (hoverId) {
+    const idx = tsIndexFor(hoverId);
+    idxs = idx == null ? [] : [idx];
+    scope = BASE_BY_ID[hoverId]?.nome || hoverId;
+    isSingle = true;
+  } else {
+    const subsetIds = new Set(currentSubset().map(p => p.id));
+    idxs = TS.id_order.map((cid, i) => subsetIds.has(cid) ? i : -1).filter(i => i >= 0);
+    scope = activeComune ? (BASE_BY_ID[activeComune]?.nome || 'comune') : (activeProv || 'Sicilia');
+  }
+
+  const years = TS.years;
+  const vals = years.map(y => {
+    const per = TS.periods[`${y}-01`];
+    if (!per) return 0;
+    return idxs.reduce((s, i) => s + (per.vy[i] || 0), 0);
+  });
+  const max = Math.max(1, ...vals);
+  const { l: padL, r: padR, t: padT, b: padB } = BIV_TREND_PAD;
+  const w = BIV_TREND_W, h = BIV_TREND_H, plotW = BIV_TREND_PLOT_W, plotH = BIV_TREND_PLOT_H;
+  const n = vals.length;
+  const pts = vals.map((v, i) => {
+    const x = padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const y = padT + plotH - (v / max) * plotH;
+    return [x, y];
+  });
+  const linePath = pts.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt[0].toFixed(1)},${pt[1].toFixed(1)}`).join(' ');
+  const areaPath = `${linePath} L${pts[pts.length - 1][0].toFixed(1)},${(padT + plotH).toFixed(1)} L${pts[0][0].toFixed(1)},${(padT + plotH).toFixed(1)} Z`;
+  const dots = pts.map(([x, y], i) => {
+    const isCur = MODE === 'livello' && selYear !== 'clima' && Number(selYear) === years[i];
+    return `<circle class="biv-trend-dot${isCur ? ' cur' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isCur ? 3 : 1.6}"/>`;
+  }).join('');
+
+  const unitLbl = isSingle ? (l.yUnit || '') : `${l.yUnit || ''} tot.`.trim();
+  el.classList.add('show');
+  el.innerHTML = `<div class="biv-trend-title">Andamento ${esc(l.fieldY.toLowerCase())}${isSingle ? '' : ' totale'}, ${esc(scope)} ${years[0]}-${years[years.length - 1]}</div>
+<div class="biv-trend-svg-wrap">
+<svg class="biv-trend-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+  <path class="biv-trend-area" d="${areaPath}"/>
+  <path class="biv-trend-line" d="${linePath}"/>
+  ${dots}
+  <line class="biv-trend-guide" x1="0" x2="0" y1="${padT}" y2="${padT + plotH}"/>
+  <circle class="biv-trend-hover-dot" r="3"/>
+  <text x="${padL}" y="${h - 1}" class="biv-trend-lbl">${years[0]}</text>
+  <text x="${w - padR}" y="${h - 1}" class="biv-trend-lbl" text-anchor="end">${years[years.length - 1]}</text>
+</svg>
+<div class="biv-trend-tt"></div>
+</div>`;
+
+  const svgEl = el.querySelector('.biv-trend-svg');
+  const wrapEl = el.querySelector('.biv-trend-svg-wrap');
+  const ttEl = el.querySelector('.biv-trend-tt');
+  const guideEl = el.querySelector('.biv-trend-guide');
+  const hoverDotEl = el.querySelector('.biv-trend-hover-dot');
+
+  function onMove(e) {
+    const rect = svgEl.getBoundingClientRect();
+    if (!rect.width) return;
+    const mouseX = ((e.clientX - rect.left) / rect.width) * w;
+    let idx = Math.round(((mouseX - padL) / plotW) * (n - 1));
+    idx = Math.max(0, Math.min(n - 1, idx));
+    const [px, py] = pts[idx];
+    guideEl.setAttribute('x1', px); guideEl.setAttribute('x2', px);
+    hoverDotEl.setAttribute('cx', px); hoverDotEl.setAttribute('cy', py);
+    guideEl.style.opacity = 1; hoverDotEl.style.opacity = 1;
+    ttEl.textContent = `${years[idx]}: ${fmt(vals[idx], 0)}${unitLbl ? ' ' + unitLbl : ''}`;
+    const ttLeftPct = px / w;
+    ttEl.style.left = (ttLeftPct * 100) + '%';
+    ttEl.style.top = ((py / h) * rect.height) + 'px';
+    ttEl.classList.add('show');
+  }
+  function onLeave() {
+    ttEl.classList.remove('show');
+    guideEl.style.opacity = 0;
+    hoverDotEl.style.opacity = 0;
+  }
+  wrapEl.addEventListener('mousemove', onMove);
+  wrapEl.addEventListener('mouseleave', onLeave);
+}
+
 function showInfo(p) {
   const l = LAYERS[activeLayer];
   document.getElementById('i-title').innerHTML = `${esc(p.nome)} · ${esc(p.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">${esc(periodLabel())}</span>`;
@@ -1234,6 +1389,7 @@ function showInfo(p) {
     document.getElementById('i-table').innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);
+  document.getElementById('i-chart').innerHTML = buildFireChart(p);
   document.getElementById('info').style.display = 'block';
 }
 
