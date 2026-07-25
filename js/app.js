@@ -154,17 +154,17 @@ const LAYERS = {
     xLabels: PDSI_LABELS, xIcon: PDSI_ICON, xLabelsTr: PDSI_LABELS, xIconTr: PDSI_ICON,
     fieldX: 'PDSI medio', fieldXBase: 'PDSI', xUnit: 'indice', xDec: 2,
     yLabels: FIRE_LABELS_AREA, yIcon: FIRE_ICON_AREA, yLabelsTr: FIRE_LABELS_AREA, yIconTr: FIRE_ICON_AREA,
-    fieldY: 'Area bruciata', fieldYTrend: 'Area bruciata', yUnit: 'ha', yDec: 1,
-    statsLblY: 'area media ha/anno', statsLblYTr: 'area media ha/anno',
+    fieldY: 'Area bruciata', fieldYTrend: 'Trend area bruciata', yUnit: 'ha', yDec: 1,
+    statsLblY: 'area media ha/anno', statsLblYTr: 'trend area ha/decennio',
     rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
     rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
     rankHi: { key: 'area_alta', icon: '🔥', color: '#7a2020', titleLivello: 'Più area bruciata', dec: 0 },
     rankLo: { key: 'area_bassa', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno area bruciata', dec: 0 },
     hasMinMax: false,
     pairTitle: 'PDSI × Area bruciata',
-    pairTitleTrend: 'PDSI × Area bruciata',
+    pairTitleTrend: 'Trend PDSI × Area bruciata',
     panelSub: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
-    panelSubTrend: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    panelSubTrend: '391 comuni di Sicilia — trend OLS 2007-2025 (indice/decennio, ha/decennio)',
     explain: `<p>Questa mappa incrocia il PDSI (indice di siccità) con l'area bruciata dagli incendi per capire quanto la siccità sia associata a un maggiore rischio incendio, comune per comune.</p>
 <p>Il dato incendio è sempre <strong>annuale</strong>: selezionando un mese specifico nella timeline, il valore PDSI si aggiorna a quel mese ma l'area bruciata resta il totale dell'intero anno (il dataset non è ancora aggregato per mese, anche se la maggior parte degli incendi dal 2010 in poi riporta una data precisa).</p>
 <p>Periodo disponibile: 2007-2025, con il 2019 assente dal dataset regionale antincendio.</p>
@@ -184,17 +184,17 @@ const LAYERS = {
     xLabels: PDSI_LABELS, xIcon: PDSI_ICON, xLabelsTr: PDSI_LABELS, xIconTr: PDSI_ICON,
     fieldX: 'PDSI medio', fieldXBase: 'PDSI', xUnit: 'indice', xDec: 2,
     yLabels: FIRE_LABELS_COUNT, yIcon: FIRE_ICON_COUNT, yLabelsTr: FIRE_LABELS_COUNT, yIconTr: FIRE_ICON_COUNT,
-    fieldY: 'N. incendi', fieldYTrend: 'N. incendi', yUnit: '', yDec: 1,
-    statsLblY: 'eventi medi/anno', statsLblYTr: 'eventi medi/anno',
+    fieldY: 'N. incendi', fieldYTrend: 'Trend n. incendi', yUnit: '', yDec: 1,
+    statsLblY: 'eventi medi/anno', statsLblYTr: 'trend eventi/decennio',
     rankHiX: { key: 'secco', icon: '🏜️', color: '#a85c3b', titleLivello: 'PDSI più basso (più secco)', dec: 2 },
     rankLoX: { key: 'umido', icon: '💧', color: '#4f8f8a', titleLivello: 'PDSI più alto (più umido)', dec: 2 },
     rankHi: { key: 'eventi_alti', icon: '🔥', color: '#7a2020', titleLivello: 'Più incendi', dec: 0 },
     rankLo: { key: 'eventi_bassi', icon: '⬜', color: '#8a8a8a', titleLivello: 'Meno incendi', dec: 0 },
     hasMinMax: false,
     pairTitle: 'PDSI × N. incendi',
-    pairTitleTrend: 'PDSI × N. incendi',
+    pairTitleTrend: 'Trend PDSI × N. incendi',
     panelSub: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
-    panelSubTrend: '391 comuni di Sicilia — 2007-2025 (2019 assente)',
+    panelSubTrend: '391 comuni di Sicilia — trend OLS 2007-2025 (indice/decennio, eventi/decennio)',
     explain: `<p>Questa mappa incrocia il PDSI (indice di siccità) con il numero di incendi registrati per capire quanto la siccità sia associata a una maggiore frequenza di focolai, comune per comune.</p>
 <p>Il dato incendio è sempre <strong>annuale</strong>: selezionando un mese specifico nella timeline, il valore PDSI si aggiorna a quel mese ma il conteggio incendi resta il totale dell'intero anno.</p>
 <p>Periodo disponibile: 2007-2025, con il 2019 assente dal dataset regionale antincendio.</p>
@@ -209,11 +209,13 @@ const LAYERS = {
     axisLabelX: 'Anomalia estate (giu-lug-ago) vs 1950-1985',
     xLabels: ANOMALY_LABELS, xIcon: ANOMALY_ICON, xLabelsTr: ANOMALY_LABELS, xIconTr: ANOMALY_ICON,
     fieldX: 'Anomalia estiva', fieldXBase: 'Anomalia', xUnit: '°C', xDec: 2,
-    rankHiX: { key: 'piu_caldo', icon: '🔥', color: '#b7472e', titleLivello: 'Più riscaldati', dec: 2 },
-    rankLoX: { key: 'meno_caldo', icon: '🌡️', color: '#f3b995', titleLivello: 'Meno riscaldati', dec: 2 },
+    rankHiX: { key: 'piu_caldo', icon: '🔥', color: '#b7472e', titleLivello: 'Più riscaldati', titleTrend: 'Riscaldamento più forte', dec: 2, decTrend: 2 },
+    rankLoX: { key: 'meno_caldo', icon: '🌡️', color: '#f3b995', titleLivello: 'Meno riscaldati', titleTrend: 'Riscaldamento più debole', dec: 2, decTrend: 2 },
     hasMinMax: false,
     pairTitle: 'Anomalia estiva',
+    pairTitleTrend: 'Trend anomalia estiva',
     panelSub: '391 comuni di Sicilia — estate (giu-lug-ago) vs baseline 1950-1985',
+    panelSubTrend: '391 comuni di Sicilia — trend OLS 1950-2025 dell\'anomalia estiva (°C/decennio)',
     explain: `<p>Questa mappa mostra quanto la temperatura media dell'<strong>estate</strong> (giugno-luglio-agosto) di un dato anno si discosta dalla media estiva del periodo <strong>1950-1985</strong>, comune per comune — un modo diretto di vedere il riscaldamento in corso, invece di una fotografia statica di caldo/freddo.</p>
 <p>È un indicatore <strong>singolo</strong> (solo temperatura), non incrociato con la pioggia come gli altri tab: qui il secondo "asse" è il tempo stesso — usa la timeline per vedere come l'anomalia cresce anno dopo anno.</p>
 <p>Il colore segue sempre la stessa scala in ogni anno: lo stesso rosso indica sempre la stessa fascia di scostamento, così il progredire del colore nel tempo racconta il riscaldamento.</p>
@@ -374,13 +376,25 @@ async function loadLayerData(id) {
     const pal = buildAnomalyPalette(5);
     const pal3 = buildAnomalyPalette(3);
     if (cfg.zeroColor) { pal['0'] = cfg.zeroColor; pal3['0'] = cfg.zeroColor; }
+    // trend OLS (°C/decennio): un solo valore per comune, breaks/classi calcolate qui
+    // come per gli altri layer bivariati (comuni_*_trend_stats.json non li precalcola).
+    const newBreaksXTr = quintileBreaks(newTrendStats.map(p => p.vx));
+    const newBreaksX3Tr = terzileBreaks(newTrendStats.map(p => p.vx));
+    const newTrendById = {};
+    newTrendStats.forEach(p => {
+      const cx = classify5(p.vx, newBreaksXTr);
+      p.biv = cx != null ? String(cx) : null;
+      const cx3 = classify3(p.vx, newBreaksX3Tr);
+      p.bivMap = cx3 != null ? String(cx3) : null;
+      newTrendById[p.id] = p;
+    });
     const data = {
       BASE_STATS: newBaseStats, BASE_BY_ID: newBaseById, TS: newTs,
-      TREND_STATS: newTrendStats, TREND_BY_ID: {},
+      TREND_STATS: newTrendStats, TREND_BY_ID: newTrendById,
       BREAKS_X: statsJson.breaksX, BREAKS_Y: [],
-      BREAKS_X_TR: [], BREAKS_Y_TR: [],
+      BREAKS_X_TR: newBreaksXTr, BREAKS_Y_TR: [],
       BREAKS_X3: statsJson.breaksX3, BREAKS_Y3: [],
-      BREAKS_X3_TR: [], BREAKS_Y3_TR: [],
+      BREAKS_X3_TR: newBreaksX3Tr, BREAKS_Y3_TR: [],
       BREAKS_X_Z: statsJson.breaksXZ, BREAKS_X3_Z: statsJson.breaksX3Z,
       PAL: pal, PAL3: pal3,
     };
@@ -469,7 +483,7 @@ function updateLayerChrome() {
   document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', (LAYERS[b.dataset.layer]?.tabGroup || b.dataset.layer) === (l.tabGroup || activeLayer)));
   document.body.classList.toggle('layer-pf', l.tabGroup === 'pf');
   document.body.classList.toggle('layer-anomaly', !!l.singleVar);
-  if ((l.tabGroup === 'pf' || l.singleVar) && (MODE === 'trend' || MODE === 'confronto')) setMode('livello');
+  if ((l.tabGroup === 'pf' || l.singleVar) && MODE === 'confronto') setMode('livello');
   renderBivTrendChart();
 }
 
@@ -1019,8 +1033,8 @@ function buildBivGrid() {
 
   if (l.singleVar) {
     const { temp: T, tempIcon: TI } = curLabels();
-    const breaksX = anomalyZMode ? BREAKS_X_Z : BREAKS_X;
-    const unit = anomalyZMode ? 'σ' : l.xUnit;
+    const breaksX = MODE === 'trend' ? BREAKS_X_TR : (anomalyZMode ? BREAKS_X_Z : BREAKS_X);
+    const unit = MODE === 'trend' ? `${l.xUnit}/decennio` : (anomalyZMode ? 'σ' : l.xUnit);
     let html = '';
     for (let tx = 1; tx <= 5; tx++) {
       const lo = tx === 1 ? null : breaksX[tx - 2];
@@ -1257,10 +1271,11 @@ function updateStats() {
 function rankSections() {
   const l = LAYERS[activeLayer];
   if (l.singleVar) {
-    const unit = anomalyZMode ? 'σ' : l.xUnit;
+    const isTrend = MODE === 'trend';
+    const unit = isTrend ? `${l.xUnit}/decennio` : (anomalyZMode ? 'σ' : l.xUnit);
     return [
-      [l.rankHiX.key, l.rankHiX.icon, l.rankHiX.titleLivello, unit, 'vx', 'desc', l.rankHiX.color, l.rankHiX.dec],
-      [l.rankLoX.key, l.rankLoX.icon, l.rankLoX.titleLivello, unit, 'vx', 'asc', l.rankLoX.color, l.rankLoX.dec],
+      [l.rankHiX.key, l.rankHiX.icon, isTrend ? l.rankHiX.titleTrend : l.rankHiX.titleLivello, unit, 'vx', 'desc', l.rankHiX.color, isTrend ? l.rankHiX.decTrend : l.rankHiX.dec],
+      [l.rankLoX.key, l.rankLoX.icon, isTrend ? l.rankLoX.titleTrend : l.rankLoX.titleLivello, unit, 'vx', 'asc', l.rankLoX.color, isTrend ? l.rankLoX.decTrend : l.rankLoX.dec],
     ];
   }
   if (MODE === 'trend') {
@@ -1391,10 +1406,14 @@ function buildClassBlock(biv) {
     const tx = Number(biv);
     const { temp: T, tempIcon: TI } = curLabels();
     const color = PAL[biv] || '#888';
-    const phrase = biv === '0' ? 'Nessuna anomalia (periodo di riferimento)' : `${TI[tx]} ${capitalize(T[tx])}`;
-    const desc = anomalyZMode
-      ? 'deviazioni standard rispetto alla media estiva 1950-1985 di questo comune'
-      : '°C rispetto alla media estiva 1950-1985 di questo comune';
+    const phrase = (MODE !== 'trend' && biv === '0')
+      ? 'Nessuna anomalia (periodo di riferimento)'
+      : `${TI[tx]} ${capitalize(T[tx])}`;
+    const desc = MODE === 'trend'
+      ? 'pendenza OLS 1950-2025, quintili sui 391 comuni'
+      : (anomalyZMode
+        ? 'deviazioni standard rispetto alla media estiva 1950-1985 di questo comune'
+        : '°C rispetto alla media estiva 1950-1985 di questo comune');
     return `<div class="cls-badge" style="background:${color};color:${textOnPal(color)}">${phrase}</div>`
       + `<div class="cls-desc">${desc}</div>`;
   }
@@ -1573,12 +1592,15 @@ function showInfo(p) {
   document.getElementById('i-title').innerHTML = `${esc(p.nome)} · ${esc(p.prov)}<br><span style="font-weight:400;color:var(--text2);font-size:9px;">${esc(periodLabel())}</span>`;
   if (MODE === 'trend') {
     const sigTxt = sig => sig === true ? 'significativo (p<0.05)' : sig === false ? 'non significativo' : '—';
-    document.getElementById('i-table').innerHTML = [
+    const rows = [
       [`Trend ${l.fieldX.toLowerCase()}`, fmt(p.vx, 2) + ` ${l.xUnit}/decennio`],
-      ['Significatività temp.', sigTxt(p.temp_sig)],
-      [l.fieldYTrend, fmt(p.vy, 1) + ' mm/decennio'],
-      ['Significatività precip.', sigTxt(p.precip_sig)],
-    ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+      [`Significatività ${l.fieldX.toLowerCase()}`, sigTxt(p.temp_sig)],
+    ];
+    if (!l.singleVar) {
+      rows.push([`${l.fieldYTrend}`, fmt(p.vy, 1) + ` ${l.yUnit != null ? l.yUnit : 'mm'}/decennio`]);
+      rows.push([`Significatività ${l.fieldY.toLowerCase()}`, sigTxt(p.precip_sig)]);
+    }
+    document.getElementById('i-table').innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   } else {
     const unit = l.singleVar && anomalyZMode ? 'σ' : l.xUnit;
     const rows = [[l.fieldX, fmt(p.vx, l.xDec) + ` ${unit}`]];
@@ -1655,8 +1677,11 @@ function setMode(mode) {
   if (mode === 'trend') {
     CURRENT = TREND_STATS;
     CURRENT_BY_ID = TREND_BY_ID;
-    document.getElementById('periodo-hint').textContent =
-      'Trend OLS 1950-2025: pendenza della retta di regressione su 76 medie annuali per comune. Il riscaldamento è significativo (p<0.05) in tutti i comuni; il trend delle piogge è quasi ovunque non significativo — vedi popup per il dettaglio statistico.';
+    document.getElementById('periodo-hint').textContent = l.singleVar
+      ? 'Trend OLS: pendenza della retta di regressione dell\'anomalia estiva su 76 anni per comune (°C/decennio) — vedi popup per il dettaglio statistico.'
+      : l.tabGroup === 'pf'
+      ? 'Trend OLS: pendenza della retta di regressione sui valori annuali per comune (2007-2025, 2019 assente) — vedi popup per il dettaglio statistico.'
+      : 'Trend OLS 1950-2025: pendenza della retta di regressione su 76 medie annuali per comune. Il riscaldamento è significativo (p<0.05) in tutti i comuni; il trend delle piogge è quasi ovunque non significativo — vedi popup per il dettaglio statistico.';
     syncTimelineUI();
     applyFilters();
     updateFilterUI();

@@ -627,7 +627,8 @@ body.mode-confronto #compare-rank-container { display: block; }
   .info-tab { font-size: 10.5px; padding: 9px 2px; }
 }
 
-body.layer-pf #mode-toggle {
+body.layer-pf .mode-btn[data-mode="confronto"],
+body.layer-anomaly .mode-btn[data-mode="confronto"] {
   display: none;
 }
 #fire-metric-toggle {
@@ -637,9 +638,6 @@ body.layer-pf #fire-metric-toggle {
   display: flex;
 }
 
-body.layer-anomaly #mode-toggle {
-  display: none;
-}
 #anomaly-z-toggle {
   display: none;
 }
@@ -648,6 +646,9 @@ body.layer-anomaly #anomaly-z-toggle {
   font-size: 11px;
   color: var(--text2);
   margin: 8px 0;
+}
+body.layer-anomaly.mode-trend #anomaly-z-toggle {
+  display: none;
 }
 body.layer-anomaly .tl-row-months {
   display: none;
