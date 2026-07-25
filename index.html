@@ -13,6 +13,10 @@
 
 
 
+
+
+
+
 <title>Mappa Bivariata temperatura e precipitazioni e deficit idrico  Sicilia 1950-2025 | Comuni | OpenDataSicilia</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
       integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous"/>
@@ -227,6 +231,7 @@
         <button class="layer-tab-btn active" data-layer="tp">Temp × Precip</button>
         <button class="layer-tab-btn" data-layer="dt">Deficit × Temp</button>
         <button class="layer-tab-btn" data-layer="pf_area">PDSI × Incendi</button>
+        <button class="layer-tab-btn" data-layer="anomaly_estate">Anomalia estiva</button>
       </div>
       <div id="mode-toggle" class="mode-toggle">
         <button class="mode-btn active" data-mode="livello">Valori annui</button>
@@ -236,6 +241,9 @@
       <div id="fire-metric-toggle" class="fire-metric-toggle">
         <button class="fire-metric-btn active" data-metric="area">Area bruciata</button>
         <button class="fire-metric-btn" data-metric="count">N. incendi</button>
+      </div>
+      <div id="anomaly-z-toggle" class="anomaly-z-toggle">
+        <label><input type="checkbox" id="anomaly-z-check"> Mostra come deviazione standard (σ) invece di °C</label>
       </div>
       <p class="biv-hint" id="periodo-hint"></p>
     </div>
@@ -278,7 +286,7 @@
     <hr class="sep"/>
 
     <div class="fsec">
-      <h3>Mappa bivariata</h3>
+      <h3 id="biv-grid-title">Mappa bivariata</h3>
       <div class="biv-diamond-wrap">
         <div class="biv-diamond" id="biv-grid"></div>
         <div class="biv-diag-lbl biv-diag-lbl-x" id="biv-diag-lbl-x">← Temperatura</div>
@@ -295,7 +303,7 @@
       <div class="stats-grid">
         <div class="stat-item"><span class="stat-val" id="s-n">—</span><span class="stat-lbl">comuni mostrati</span></div>
         <div class="stat-item"><span class="stat-val" id="s-temp">—</span><span class="stat-lbl" id="s-temp-lbl">temp. media °C</span></div>
-        <div class="stat-item"><span class="stat-val" id="s-precip">—</span><span class="stat-lbl" id="s-precip-lbl">precip. media mm</span></div>
+        <div class="stat-item" id="stat-precip-item"><span class="stat-val" id="s-precip">—</span><span class="stat-lbl" id="s-precip-lbl">precip. media mm</span></div>
         <div class="stat-item"><span class="stat-val" id="s-prov">—</span><span class="stat-lbl">provincia</span></div>
       </div>
     </div>
@@ -358,24 +366,45 @@
     <div class="info-panel" id="itab-guida">
       <div class="info-section">
         <p class="analisi-title">Guida alla mappa</p>
-        <p class="info-text">Questa mappa mostra <strong>temperatura e precipitazioni</strong> (o temperatura e deficit idrico) per ogni comune siciliano, mese per mese dal 1950 al 2025. Ogni comune è un poligono colorato: il colore combina le due variabili scelte in un'unica scala bivariata.</p>
+        <p class="info-text">La mappa colora ognuno dei <strong>391 comuni della Sicilia</strong> in base a due variabili incrociate insieme (una mappa "bivariata"), mese per mese dal 1950 al 2025. Il pannello di destra riporta i dettagli del comune selezionato, la legenda cliccabile e le classifiche; la timeline in basso permette di spostarsi nel tempo.</p>
+
+        <h3 class="analisi-h3">Le 4 mappe (schede in alto)</h3>
+        <ul class="analisi-list">
+          <li><strong>Temp × Precip</strong> — temperatura media e precipitazione totale media annua di ogni comune</li>
+          <li><strong>Deficit × Temp</strong> — temperatura media e deficit idrico climatico (PET − AET): individua lo stress idrico "nascosto" anche dove piove abbastanza, se vento e radiazione solare fanno evaporare più acqua di quanta ne cade</li>
+          <li><strong>PDSI × Incendi</strong> — incrocia l'indice di siccità PDSI con il rischio incendio del comune. Ha due varianti selezionabili: <strong>area bruciata</strong> (ettari) o <strong>numero di incendi</strong>. Il dato incendio è sempre annuale (il totale dell'anno), anche selezionando un singolo mese la mappa aggiorna solo il PDSI</li>
+          <li><strong>Anomalia estiva</strong> — mappa a variabile singola (non bivariata): mostra quanto l'estate (giugno-agosto) di ogni comune si scosta dalla propria media storica 1950-2025, con una scala di rossi monocromatica. Il checkbox <strong>"Mostra come deviazione standard (σ)"</strong> converte l'anomalia da °C a un punteggio z, utile per confrontare comuni con climi di partenza molto diversi</li>
+        </ul>
+
+        <hr class="analisi-sep">
 
         <h3 class="analisi-h3">Come leggere i colori</h3>
-        <p class="info-text">La <strong>legenda 3×3</strong> nel pannello di destra mostra a colpo d'occhio le 9 combinazioni possibili (basso/medio/alto su ciascuna variabile) ed è <strong>cliccabile</strong>: clicca una cella per isolare sulla mappa solo i comuni che rientrano in quella combinazione. Passa il mouse su un comune, o cliccaci sopra, per vedere i valori esatti nel popup.</p>
+        <p class="info-text">Nel pannello di destra la <strong>legenda</strong> è una griglia <strong>5×5</strong> (25 combinazioni: 5 classi per ciascuna variabile, calcolate a quintili sui 391 comuni) ed è <strong>cliccabile</strong>: clicca una cella per isolare sulla mappa solo i comuni che rientrano in quella combinazione, clicca di nuovo per rimuovere il filtro. Il <strong>colore dei poligoni sulla mappa</strong>, invece, usa una versione semplificata a <strong>3×3</strong> (9 combinazioni, a terzili) della stessa griglia, per restare leggibile su 391 poligoni contemporaneamente: due comuni possono quindi avere sfumature di legenda diverse ma lo stesso colore sulla mappa. Nella mappa "Anomalia estiva" (variabile singola) la legenda ha 5 caselle in fila e la mappa ne usa 3.</p>
+        <p class="info-text">Passa il mouse su un comune per un'anteprima rapida in un tooltip flottante; clicca sul comune per aprire il popup completo con i valori esatti delle due variabili.</p>
 
         <hr class="analisi-sep">
 
         <h3 class="analisi-h3">Modalità (pannello di destra)</h3>
         <ul class="analisi-list">
           <li><strong>Valori annui</strong> — la mappa bivariata classica, per il mese/anno selezionato nella timeline in basso</li>
-          <li><strong>Trend 1950-2025</strong> — mostra dove il riscaldamento è più marcato e dove i regimi di pioggia/deficit stanno cambiando di più</li>
-          <li><strong>Confronto</strong> — doppia mappa con divisore trascinabile per confrontare due periodi diversi</li>
+          <li><strong>Trend 1950-2025</strong> — per ogni comune calcola una regressione OLS sull'intero periodo: mostra dove il riscaldamento è più marcato e dove i regimi di pioggia/deficit/siccità stanno cambiando di più, con l'indicazione se il trend è statisticamente significativo (p&lt;0.05)</li>
+          <li><strong>Confronto</strong> — doppia mappa con divisore trascinabile: si scelgono un Periodo A e un Periodo B (anno o mese) e si vedono affiancati gli stessi comuni nelle due epoche</li>
         </ul>
 
         <hr class="analisi-sep">
 
         <h3 class="analisi-h3">Timeline</h3>
-        <p class="info-text">In basso trovi la timeline con anni e mesi scorrevoli: clicca un anno o un mese per aggiornare la mappa, usa le frecce per scorrere, oppure il pulsante ▶ per animare l'intera serie storica anno per anno.</p>
+        <p class="info-text">In basso trovi la timeline con anni e mesi in liste scorrevoli: clicca un anno o un mese per aggiornare la mappa, usa le frecce ↑↓ per scorrere, oppure il pulsante ▶ per animare l'intera serie storica anno per anno.</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Grafico andamento storico</h3>
+        <p class="info-text">Nelle mappe <strong>PDSI × Incendi</strong>, in modalità Valori annui, il pannello mostra anche un grafico a linea con l'andamento 1950-2025 dell'area bruciata o del numero di incendi. Per impostazione predefinita riflette la selezione attiva (Sicilia, provincia o comune filtrato); passando il mouse su un comune il grafico si aggiorna a mostrare la sua sola serie storica. Passa il mouse sul grafico stesso per leggere il valore esatto anno per anno.</p>
+
+        <hr class="analisi-sep">
+
+        <h3 class="analisi-h3">Statistiche e classifiche</h3>
+        <p class="info-text">In fondo al pannello di destra, la sezione <strong>Statistiche</strong> riassume i comuni mostrati (numero, medie, provincia), mentre <strong>Classifiche</strong> elenca i comuni più/meno estremi su ciascuna variabile per il periodo selezionato — utile per individuare rapidamente i casi limite senza scorrere tutta la mappa.</p>
 
         <hr class="analisi-sep">
 
@@ -385,13 +414,13 @@
           <li><span class="guida-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg></span> <strong>Tabella dati ed export</strong> — apre la tabella dati filtrabile per anno, mese, provincia e comune, con export CSV o GeoJSON</li>
           <li><span class="guida-icon"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></span> <strong>Schermo intero</strong> — attiva/disattiva la modalità a tutto schermo</li>
           <li><span class="guida-icon"><svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg></span> <strong>Tema chiaro/scuro</strong> — cambia la mappa di base tra tema chiaro e tema scuro</li>
-          <li><strong>Cursore opacità</strong> — regola la trasparenza del riempimento colorato dei comuni</li>
+          <li><strong>Cursore opacità</strong> — regola la trasparenza del riempimento colorato dei comuni, per vedere meglio la mappa di base sotto (strade, confini, rilievo)</li>
         </ul>
 
         <hr class="analisi-sep">
 
         <h3 class="analisi-h3">Ricerca e filtri</h3>
-        <p class="info-text">La barra di ricerca in alto permette di cercare un comune per nome; il pulsante <strong>Filtri</strong> apre un pannello per restringere la vista a una provincia o a un singolo comune.</p>
+        <p class="info-text">La barra di ricerca in alto permette di cercare un comune per nome e centrare la mappa su di esso; il pulsante <strong>Filtri</strong> apre un pannello per restringere la vista a una singola provincia o a un singolo comune. I filtri restano attivi cambiando mappa, modalità o periodo, e si combinano con il filtro per cella di legenda.</p>
       </div>
     </div>
 
@@ -399,7 +428,8 @@
       <div class="info-section">
         <div class="info-row">
           <strong>Fonte dati climatici</strong><br><br>
-          <strong>TerraClimate</strong>: dataset climatico globale mensile ad alta risoluzione, University of Idaho<br>
+          <strong>TerraClimate</strong>: dataset climatico globale mensile ad alta risoluzione (~4 km), prodotto dal Climatology Lab dell'Università dell'Idaho combinando le climatologie WorldClim con osservazioni CRU Ts4.0 e reanalisi JRA-55, per ottenere serie storiche mensili coerenti dal 1958 a oggi.<br>
+          Il <strong>Climatology Lab</strong> (climatologylab.org) è il gruppo di ricerca che sviluppa e distribuisce gratuitamente dataset climatici globali (temperatura, precipitazioni, indici di siccità come il PDSI, evapotraspirazione ecc.), ampiamente usati in ambito scientifico per analisi idrologiche, agricole ed ecologiche.<br>
           <a href="https://www.climatologylab.org/terraclimate.html" title="TerraClimate" target="_blank" rel="noopener">climatologylab.org/terraclimate</a>
         </div>
         <div class="info-row">

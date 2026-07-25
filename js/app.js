@@ -67,6 +67,19 @@ const FIRE_LABELS_COUNT = ['nessun incendio', 'pochi eventi', 'alcuni eventi', '
 const FIRE_ICON_COUNT = ['⬜', '🔥', '🔥', '🔥', '🔥🔥', '🔥🔥'];
 const FIRE_ZERO_COLOR = '#c9c9c9'; // grigio neutro, indipendente dal PDSI
 
+// Anomalia estiva: rampa monocromatica rossa (5 classi legenda/ranking, 3 classi colore mappa)
+const ANOMALY_RAMP_5 = ['#fde8d8', '#f3b995', '#e2825a', '#b7472e', '#7a1f13'];
+const ANOMALY_RAMP_3 = ['#f3b995', '#e2825a', '#7a1f13'];
+const ANOMALY_NEUTRAL = FIRE_ZERO_COLOR; // stesso grigio neutro usato per "nessun dato" negli altri layer
+function buildAnomalyPalette(n) {
+  const ramp = n === 3 ? ANOMALY_RAMP_3 : ANOMALY_RAMP_5;
+  const pal = {};
+  for (let i = 1; i <= n; i++) pal[String(i)] = ramp[i - 1];
+  return pal;
+}
+const ANOMALY_LABELS = ['', 'anomalia lieve', 'anomalia moderata', 'anomalia sensibile', 'anomalia forte', 'anomalia estrema'];
+const ANOMALY_ICON = ['', '🌡️', '🌡️', '🔥', '🔥', '🔥'];
+
 const LAYERS = {
   tp: {
     id: 'tp', tabLabel: 'Temp × Precip',
@@ -128,7 +141,7 @@ const LAYERS = {
 <p>Utile per: agricoltura (quanta acqua serve davvero alle colture), rischio incendi, gestione delle risorse idriche comunali — le domande a cui agronomi e idrologi rispondono con questo dato, non con la pioggia grezza.</p>`,
   },
   pf_area: {
-    id: 'pf_area', tabGroup: 'pf', tabLabel: 'PDSI × Incendi', fireMetric: 'area',
+    id: 'pf_area', tabGroup: 'pf', hasTrendChart: true, tabLabel: 'PDSI × Incendi', fireMetric: 'area',
     statsUrl: 'dati/comuni_bivariate_pf_area_stats.json',
     tsUrl: 'dati/comuni_timeseries_pf_area.json',
     trendUrl: 'dati/comuni_bivariate_pf_area_trend_stats.json',
@@ -158,7 +171,7 @@ const LAYERS = {
 <p>I comuni senza alcun incendio registrato in un dato anno appaiono in grigio neutro, non nella classe "meno secco/poco incendio" — per non confondere "nessun dato" con "rischio basso".</p>`,
   },
   pf_count: {
-    id: 'pf_count', tabGroup: 'pf', tabLabel: 'PDSI × Incendi', fireMetric: 'count',
+    id: 'pf_count', tabGroup: 'pf', hasTrendChart: true, tabLabel: 'PDSI × Incendi', fireMetric: 'count',
     statsUrl: 'dati/comuni_bivariate_pf_count_stats.json',
     tsUrl: 'dati/comuni_timeseries_pf_count.json',
     trendUrl: 'dati/comuni_bivariate_pf_count_trend_stats.json',
@@ -186,6 +199,26 @@ const LAYERS = {
 <p>Il dato incendio è sempre <strong>annuale</strong>: selezionando un mese specifico nella timeline, il valore PDSI si aggiorna a quel mese ma il conteggio incendi resta il totale dell'intero anno.</p>
 <p>Periodo disponibile: 2007-2025, con il 2019 assente dal dataset regionale antincendio.</p>
 <p>I comuni senza alcun incendio registrato in un dato anno appaiono in grigio neutro, non nella classe "meno secco/pochi eventi" — per non confondere "nessun dato" con "rischio basso".</p>`,
+  },
+  anomaly_estate: {
+    id: 'anomaly_estate', tabLabel: 'Anomalia estiva', singleVar: true, hasTrendChart: true,
+    statsUrl: 'dati/comuni_anomaly_estate_stats.json',
+    tsUrl: 'dati/comuni_anomaly_estate.json',
+    trendUrl: 'dati/comuni_anomaly_estate_trend_stats.json',
+    zeroColor: ANOMALY_NEUTRAL,
+    axisLabelX: 'Anomalia estate (giu-lug-ago) vs 1950-1985',
+    xLabels: ANOMALY_LABELS, xIcon: ANOMALY_ICON, xLabelsTr: ANOMALY_LABELS, xIconTr: ANOMALY_ICON,
+    fieldX: 'Anomalia estiva', fieldXBase: 'Anomalia', xUnit: '°C', xDec: 2,
+    rankHiX: { key: 'piu_caldo', icon: '🔥', color: '#b7472e', titleLivello: 'Più riscaldati', dec: 2 },
+    rankLoX: { key: 'meno_caldo', icon: '🌡️', color: '#f3b995', titleLivello: 'Meno riscaldati', dec: 2 },
+    hasMinMax: false,
+    pairTitle: 'Anomalia estiva',
+    panelSub: '391 comuni di Sicilia — estate (giu-lug-ago) vs baseline 1950-1985',
+    explain: `<p>Questa mappa mostra quanto la temperatura media dell'<strong>estate</strong> (giugno-luglio-agosto) di un dato anno si discosta dalla media estiva del periodo <strong>1950-1985</strong>, comune per comune — un modo diretto di vedere il riscaldamento in corso, invece di una fotografia statica di caldo/freddo.</p>
+<p>È un indicatore <strong>singolo</strong> (solo temperatura), non incrociato con la pioggia come gli altri tab: qui il secondo "asse" è il tempo stesso — usa la timeline per vedere come l'anomalia cresce anno dopo anno.</p>
+<p>Il colore segue sempre la stessa scala in ogni anno: lo stesso rosso indica sempre la stessa fascia di scostamento, così il progredire del colore nel tempo racconta il riscaldamento.</p>
+<p>Le soglie delle 5 classi sono fisse e calcolate su <strong>tutti gli anni dal 1950 al 2025 insieme</strong>, non ricalcolate anno per anno. Per questo negli anni recenti più estremi (es. 2025) la mappa può apparire quasi <strong>tutta dello stesso rosso scuro</strong>: non è un errore, significa che quell'estate ha superato la soglia più alta praticamente ovunque in Sicilia. Per vedere differenze di colore tra comuni prova anni più indietro (es. anni '90 o 2000), oppure guarda le classifiche "Più/meno riscaldati" qui sotto, dove la variazione tra comuni resta visibile anche quando la mappa è uniforme.</p>
+<p>Il toggle <strong>deviazione standard</strong> (nel pannello, quando questo tab è attivo) ricolora sulla base di quanto lo scostamento è marcato rispetto alla variabilità storica di ciascun comune, invece che in °C assoluti — utile per distinguere un cambiamento forte in assoluto da uno forte solo rispetto a un clima locale storicamente molto stabile.</p>`,
   },
 };
 
@@ -219,11 +252,13 @@ let activeProv = '';
 let activeComune = '';
 let BREAKS_X = [], BREAKS_Y = []; // 4 soglie quintili, calcolate sui 391 comuni (climatologia)
 let MODE = 'livello';     // 'livello' | 'trend'
+let anomalyZMode = false; // toggle deviazione standard, solo per il layer anomaly_estate
 let TREND_STATS = null;   // trend OLS 1950-2025: id, nome, prov, vx(=°C/decennio), vy(=mm/decennio), temp_p, precip_p, temp_sig, precip_sig, biv
 let TREND_BY_ID = {};
 let BREAKS_X_TR = [], BREAKS_Y_TR = [];
 // terzili: solo per il colore mappa (colore poligoni), la classificazione testuale/legenda/ranking resta su quintili
 let BREAKS_X3 = [], BREAKS_Y3 = [], BREAKS_X3_TR = [], BREAKS_Y3_TR = [];
+let BREAKS_X_Z = [], BREAKS_X3_Z = []; // solo per il layer anomaly_estate (toggle z-score)
 let PAL3 = {};
 
 const fmt = (v, d = 1) => v == null ? '—' : Number(v).toLocaleString('it-IT', { maximumFractionDigits: d });
@@ -328,11 +363,30 @@ async function loadLayerData(id) {
   const [statsRes, tsRes, trendRes] = await Promise.all([
     fetch(cfg.statsUrl), fetch(cfg.tsUrl), fetch(cfg.trendUrl),
   ]);
-  const newBaseStats = (await statsRes.json()).props;
+  const statsJson = await statsRes.json();
+  const newBaseStats = statsJson.props;
   const newTs = await tsRes.json();
   const newTrendStats = (await trendRes.json()).props;
   const newBaseById = {};
   newBaseStats.forEach(p => { newBaseById[p.id] = p; });
+
+  if (cfg.singleVar) {
+    const pal = buildAnomalyPalette(5);
+    const pal3 = buildAnomalyPalette(3);
+    if (cfg.zeroColor) { pal['0'] = cfg.zeroColor; pal3['0'] = cfg.zeroColor; }
+    const data = {
+      BASE_STATS: newBaseStats, BASE_BY_ID: newBaseById, TS: newTs,
+      TREND_STATS: newTrendStats, TREND_BY_ID: {},
+      BREAKS_X: statsJson.breaksX, BREAKS_Y: [],
+      BREAKS_X_TR: [], BREAKS_Y_TR: [],
+      BREAKS_X3: statsJson.breaksX3, BREAKS_Y3: [],
+      BREAKS_X3_TR: [], BREAKS_Y3_TR: [],
+      BREAKS_X_Z: statsJson.breaksXZ, BREAKS_X3_Z: statsJson.breaksX3Z,
+      PAL: pal, PAL3: pal3,
+    };
+    layerCache[id] = data;
+    return data;
+  }
 
   // climatologia: aggiunge tmax/tmin medi (media di tutti i mesi) a newBaseStats
   const n = newTs.id_order.length;
@@ -397,21 +451,25 @@ function applyLayerData(data) {
   BREAKS_X_TR = data.BREAKS_X_TR; BREAKS_Y_TR = data.BREAKS_Y_TR;
   BREAKS_X3 = data.BREAKS_X3; BREAKS_Y3 = data.BREAKS_Y3;
   BREAKS_X3_TR = data.BREAKS_X3_TR; BREAKS_Y3_TR = data.BREAKS_Y3_TR;
+  BREAKS_X_Z = data.BREAKS_X_Z || []; BREAKS_X3_Z = data.BREAKS_X3_Z || [];
   PAL = data.PAL; PAL3 = data.PAL3;
 }
 
 function updateLayerChrome() {
   const l = LAYERS[activeLayer];
   document.getElementById('biv-diag-lbl-x').textContent = l.axisLabelX;
-  document.getElementById('biv-diag-lbl-y').textContent = l.axisLabelY;
+  document.getElementById('biv-diag-lbl-y').textContent = l.axisLabelY || '';
   document.getElementById('panel-title').textContent = MODE === 'trend' ? l.pairTitleTrend : l.pairTitle;
+  document.getElementById('biv-grid-title').textContent = l.singleVar ? 'Legenda' : 'Mappa bivariata';
   document.getElementById('panel-sub').textContent = MODE === 'trend' ? l.panelSubTrend : l.panelSub;
-  document.getElementById('s-temp-lbl').textContent = MODE === 'trend' ? `trend ${l.fieldX.toLowerCase()} ${l.xUnit}/decennio` : `${l.fieldX.toLowerCase()} ${l.xUnit}`;
+  const xUnitNow = l.singleVar && anomalyZMode ? 'σ' : l.xUnit;
+  document.getElementById('s-temp-lbl').textContent = MODE === 'trend' ? `trend ${l.fieldX.toLowerCase()} ${l.xUnit}/decennio` : `${l.fieldX.toLowerCase()} ${xUnitNow}`;
   document.getElementById('s-precip-lbl').textContent = MODE === 'trend' ? l.statsLblYTr : l.statsLblY;
   document.getElementById('layer-explain').innerHTML = l.explain;
   document.querySelectorAll('.layer-tab-btn').forEach(b => b.classList.toggle('active', (LAYERS[b.dataset.layer]?.tabGroup || b.dataset.layer) === (l.tabGroup || activeLayer)));
   document.body.classList.toggle('layer-pf', l.tabGroup === 'pf');
-  if (l.tabGroup === 'pf' && (MODE === 'trend' || MODE === 'confronto')) setMode('livello');
+  document.body.classList.toggle('layer-anomaly', !!l.singleVar);
+  if ((l.tabGroup === 'pf' || l.singleVar) && (MODE === 'trend' || MODE === 'confronto')) setMode('livello');
   renderBivTrendChart();
 }
 
@@ -420,6 +478,7 @@ async function switchLayer(id) {
   stopPlay();
   const data = await loadLayerData(id);
   activeLayer = id;
+  if (LAYERS[id].singleVar) selMonth = 'annua';
   applyLayerData(data);
   buildTimeline();
   activeBiv = null;
@@ -455,6 +514,15 @@ function setupFireMetricToggle() {
   });
 }
 
+function setupAnomalyZToggle() {
+  document.getElementById('anomaly-z-check').addEventListener('change', e => {
+    anomalyZMode = e.target.checked;
+    buildBivGrid();
+    setPeriod(selYear, selMonth);
+    updateLayerChrome();
+  });
+}
+
 async function init() {
   const data = await loadLayerData('tp');
   applyLayerData(data);
@@ -473,6 +541,7 @@ async function init() {
   setupModeToggle();
   setupLayerTabs();
   setupFireMetricToggle();
+  setupAnomalyZToggle();
   setupCompareUI();
   setupCompareDivider();
   updateLayerChrome();
@@ -521,6 +590,7 @@ async function init() {
         if (!loaderHidden) {
           loaderHidden = true;
           document.getElementById('map-loader')?.classList.add('map-loader-hidden');
+          runIntroAnimation();
         }
       }
     });
@@ -543,6 +613,7 @@ function buildTimeline() {
   // TS.years puo' avere buchi (es. layer pf: 2007-2025 senza 2019) -> elenca gli anni
   // effettivamente presenti, non un range numerico continuo tra il primo e l'ultimo.
   let hy = `<div class="tl-item tl-clima" data-year="clima">Clima</div>`;
+  if (LAYERS[activeLayer].singleVar) hy += `<div class="tl-item tl-clima" data-year="recent">2020-25</div>`;
   TS.years.forEach(y => { hy += `<div class="tl-item" data-year="${y}">${y}</div>`; });
   years.innerHTML = hy;
 
@@ -556,11 +627,13 @@ function buildTimeline() {
   years.addEventListener('click', e => {
     const item = e.target.closest('.tl-item');
     if (!item) return;
+    stopPlay();
     setPeriod(item.dataset.year, selMonth);
   });
   months.addEventListener('click', e => {
     const item = e.target.closest('.tl-item');
     if (!item) return;
+    stopPlay();
     setPeriod(selYear, item.dataset.month === 'annua' ? 'annua' : +item.dataset.month);
   });
 }
@@ -586,7 +659,14 @@ function setPeriod(year, month) {
   CURRENT.forEach(p => { CURRENT_BY_ID[p.id] = p; });
 
   const hint = document.getElementById('periodo-hint');
-  if (year === 'clima') {
+  const lp = LAYERS[activeLayer];
+  if (lp.singleVar) {
+    hint.textContent = year === 'clima'
+      ? 'Baseline 1950-1985: nessuna anomalia (periodo di riferimento).'
+      : year === 'recent'
+      ? 'Media estate 2020-2025 vs media estate 1950-1985 — il confronto diretto tra ieri e oggi.'
+      : `Estate ${year} (giu-lug-ago): scarto vs media estiva 1950-1985.`;
+  } else if (year === 'clima') {
     hint.textContent = 'Climatologia TerraClimate 1950-2025. Soglie di classificazione fisse per tutti i periodi.';
   } else if (month === 'annua') {
     hint.textContent = `Media annua ${year}. Classi sulle soglie della climatologia.`;
@@ -605,8 +685,17 @@ function computePeriodData(year, month) {
   const n = TS.id_order.length;
   const out = new Array(n);
 
+  const l = LAYERS[activeLayer];
+  if (l.singleVar) {
+    const p = TS.periods[String(year)];
+    const field = anomalyZMode ? 'z' : 'anomaly';
+    for (let c = 0; c < n; c++) {
+      out[c] = buildEntry(TS.id_order[c], p ? p[field][c] : null, null, null, null);
+    }
+    return out;
+  }
+
   if (month === 'annua') {
-    const l = LAYERS[activeLayer];
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`)
       .map(k => TS.periods[k]).filter(Boolean);
     for (let c = 0; c < n; c++) {
@@ -640,6 +729,19 @@ function computePeriodData(year, month) {
 function buildEntry(id, vx, vy, tmax, tmin) {
   const base = BASE_BY_ID[id] || {};
   const l = LAYERS[activeLayer];
+  if (l.singleVar) {
+    const breaksX = anomalyZMode ? BREAKS_X_Z : BREAKS_X;
+    const breaksX3 = anomalyZMode ? BREAKS_X3_Z : BREAKS_X3;
+    const cls_x = classify5(vx, breaksX);
+    const cls_x3 = classify3(vx, breaksX3);
+    return {
+      id, nome: base.nome, prov: base.prov,
+      vx: vx != null ? +vx.toFixed(2) : null,
+      vy: null, tmax: null, tmin: null,
+      biv: cls_x != null ? String(cls_x) : null,
+      bivMap: cls_x3 != null ? String(cls_x3) : null,
+    };
+  }
   const cls_x = classify5(vx, BREAKS_X);
   const cls_y = (l.zeroClassY && vy === 0) ? 0 : classify5(vy, BREAKS_Y);
   const cls_x3 = classify3(vx, BREAKS_X3);
@@ -912,17 +1014,37 @@ function applyFeatureState() {
 // alto=temp alta+precip alta, sinistra=temp alta+precip bassa, destra=temp bassa+precip alta, basso=entrambe basse.
 function buildBivGrid() {
   const grid = document.getElementById('biv-grid');
-  const { temp: T, precip: P } = curLabels();
-  let html = '';
-  for (let row = 1; row <= 5; row++) {
-    for (let col = 1; col <= 5; col++) {
-      const tx = 6 - col, ty = 6 - row;
-      const key = `${tx}-${ty}`;
-      const title = `${capitalize(T[tx])} e ${P[ty]}`;
-      html += `<div class="biv-cell" data-biv="${key}" style="background:${PAL[key]}" title="${title}"></div>`;
+  const l = LAYERS[activeLayer];
+  grid.classList.toggle('single-var', !!l.singleVar);
+
+  if (l.singleVar) {
+    const { temp: T, tempIcon: TI } = curLabels();
+    const breaksX = anomalyZMode ? BREAKS_X_Z : BREAKS_X;
+    const unit = anomalyZMode ? 'σ' : l.xUnit;
+    let html = '';
+    for (let tx = 1; tx <= 5; tx++) {
+      const lo = tx === 1 ? null : breaksX[tx - 2];
+      const hi = tx === 5 ? null : breaksX[tx - 1];
+      const range = lo == null ? `≤ ${fmt(hi, 1)} ${unit}`
+        : hi == null ? `> ${fmt(lo, 1)} ${unit}`
+        : `${fmt(lo, 1)}–${fmt(hi, 1)} ${unit}`;
+      const title = `${TI[tx]} ${capitalize(T[tx])} (${range})`;
+      html += `<div class="biv-cell" data-biv="${tx}" style="background:${PAL[String(tx)]}" title="${title}"></div>`;
     }
+    grid.innerHTML = html;
+  } else {
+    const { temp: T, precip: P } = curLabels();
+    let html = '';
+    for (let row = 1; row <= 5; row++) {
+      for (let col = 1; col <= 5; col++) {
+        const tx = 6 - col, ty = 6 - row;
+        const key = `${tx}-${ty}`;
+        const title = `${capitalize(T[tx])} e ${P[ty]}`;
+        html += `<div class="biv-cell" data-biv="${key}" style="background:${PAL[key]}" title="${title}"></div>`;
+      }
+    }
+    grid.innerHTML = html;
   }
-  grid.innerHTML = html;
 
   grid.querySelectorAll('.biv-cell').forEach(cell => {
     cell.addEventListener('click', () => {
@@ -1134,6 +1256,13 @@ function updateStats() {
 
 function rankSections() {
   const l = LAYERS[activeLayer];
+  if (l.singleVar) {
+    const unit = anomalyZMode ? 'σ' : l.xUnit;
+    return [
+      [l.rankHiX.key, l.rankHiX.icon, l.rankHiX.titleLivello, unit, 'vx', 'desc', l.rankHiX.color, l.rankHiX.dec],
+      [l.rankLoX.key, l.rankLoX.icon, l.rankLoX.titleLivello, unit, 'vx', 'asc', l.rankLoX.color, l.rankLoX.dec],
+    ];
+  }
   if (MODE === 'trend') {
     return [
       [l.rankHiX.key, l.rankHiX.icon, l.rankHiX.titleTrend, `${l.xUnit}/decennio`, 'vx', 'desc', l.rankHiX.color, l.rankHiX.decTrend],
@@ -1218,7 +1347,7 @@ function setupHover() {
       const f = ['==', ['get', 'pro_com_t'], id];
       map.setFilter('comuni-hover', f);
       map.setFilter('comuni-hover-halo', f);
-      if (LAYERS[activeLayer].tabGroup === 'pf' && MODE === 'livello') renderBivTrendChart(id);
+      if (LAYERS[activeLayer].hasTrendChart && MODE === 'livello') renderBivTrendChart(id);
     }
     const nome = (BASE_BY_ID[id] || CURRENT_BY_ID[id] || {}).nome;
     if (nome) {
@@ -1242,7 +1371,7 @@ function setupHover() {
     infoEl.style.display = 'none';
     tooltipEl.style.display = 'none';
     hoveredId = null;
-    if (LAYERS[activeLayer].tabGroup === 'pf' && MODE === 'livello') renderBivTrendChart();
+    if (LAYERS[activeLayer].hasTrendChart && MODE === 'livello') renderBivTrendChart();
     map.setFilter('comuni-hover', ['==', ['get', 'pro_com_t'], '']);
     map.setFilter('comuni-hover-halo', ['==', ['get', 'pro_com_t'], '']);
   });
@@ -1257,6 +1386,18 @@ function periodLabel() {
 
 function buildClassBlock(biv) {
   if (!biv) return '';
+  const l = LAYERS[activeLayer];
+  if (l.singleVar) {
+    const tx = Number(biv);
+    const { temp: T, tempIcon: TI } = curLabels();
+    const color = PAL[biv] || '#888';
+    const phrase = biv === '0' ? 'Nessuna anomalia (periodo di riferimento)' : `${TI[tx]} ${capitalize(T[tx])}`;
+    const desc = anomalyZMode
+      ? 'deviazioni standard rispetto alla media estiva 1950-1985 di questo comune'
+      : '°C rispetto alla media estiva 1950-1985 di questo comune';
+    return `<div class="cls-badge" style="background:${color};color:${textOnPal(color)}">${phrase}</div>`
+      + `<div class="cls-desc">${desc}</div>`;
+  }
   const [tx, ty] = biv.split('-').map(Number);
   const { temp: T, precip: P, tempIcon: TI, precipIcon: PI } = curLabels();
   const color = PAL[biv] || '#888';
@@ -1274,29 +1415,47 @@ function tsIndexFor(id) {
   return TS.__idIdx.has(id) ? TS.__idIdx.get(id) : null;
 }
 
+function trendYearKey(l, y) {
+  return l.id === 'anomaly_estate' ? String(y) : `${y}-01`;
+}
+function trendYearVal(l, per, idx) {
+  if (!per) return null;
+  if (l.id === 'anomaly_estate') {
+    const arr = anomalyZMode ? per.z : per.anomaly;
+    return arr ? arr[idx] : null;
+  }
+  return per.vy ? per.vy[idx] : null;
+}
+
 function buildFireChart(p) {
   const l = LAYERS[activeLayer];
-  if (l.tabGroup !== 'pf' || MODE !== 'livello' || !TS || !TS.years) return '';
+  if (!l.hasTrendChart || MODE !== 'livello' || !TS || !TS.years) return '';
   const idx = tsIndexFor(p.id);
   if (idx == null) return '';
   const years = TS.years;
+  const isAnomaly = l.id === 'anomaly_estate';
   const vals = years.map(y => {
-    const per = TS.periods[`${y}-01`];
-    const v = per ? per.vy[idx] : null;
+    const v = trendYearVal(l, TS.periods[trendYearKey(l, y)], idx);
     return v == null ? 0 : v;
   });
-  const max = Math.max(1, ...vals);
+  const maxV = Math.max(0, ...vals);
+  const minV = Math.min(0, ...vals);
+  const range = Math.max(maxV - minV, 1e-6);
   const w = 232, h = 54, padL = 2, padR = 2, padB = 11, padT = 3;
   const plotW = w - padL - padR, plotH = h - padT - padB;
   const n = vals.length, bw = plotW / n;
+  const zeroY = padT + plotH * (maxV / range);
+  const unit = isAnomaly ? (anomalyZMode ? 'σ' : '°C') : (l.yUnit || '');
+  const dec = isAnomaly ? 2 : (l.yDec != null ? l.yDec : 0);
   const bars = vals.map((v, i) => {
-    const bh = (v / max) * plotH;
+    const bh = Math.max(Math.abs(v) / range * plotH, 0.5);
     const x = padL + i * bw;
-    const y = padT + (plotH - bh);
+    const y = v >= 0 ? zeroY - bh : zeroY;
     const isCur = MODE === 'livello' && selYear !== 'clima' && Number(selYear) === years[i];
-    return `<rect class="i-chart-bar${isCur ? ' cur' : ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${Math.max(bh, 0.5).toFixed(1)}" rx="1"><title>${years[i]}: ${fmt(v, l.yDec != null ? l.yDec : 0)} ${l.yUnit || ''}</title></rect>`;
+    return `<rect class="i-chart-bar${isCur ? ' cur' : ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${bh.toFixed(1)}" rx="1"><title>${years[i]}: ${fmt(v, dec)} ${unit}</title></rect>`;
   }).join('');
-  return `<div class="i-chart-title">Andamento ${esc(l.fieldY.toLowerCase())} ${years[0]}-${years[years.length - 1]}</div>
+  const fieldLabel = isAnomaly ? 'anomalia estiva' : l.fieldY.toLowerCase();
+  return `<div class="i-chart-title">Andamento ${esc(fieldLabel)} ${years[0]}-${years[years.length - 1]}</div>
 <svg class="i-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
   ${bars}
   <text x="${padL}" y="${h - 1}" class="i-chart-lbl">${years[0]}</text>
@@ -1312,7 +1471,8 @@ const BIV_TREND_PLOT_H = BIV_TREND_H - BIV_TREND_PAD.t - BIV_TREND_PAD.b;
 function renderBivTrendChart(hoverId) {
   const el = document.getElementById('biv-trend-chart');
   const l = LAYERS[activeLayer];
-  if (l.tabGroup !== 'pf' || !TS || !TS.years || MODE === 'confronto') { el.classList.remove('show'); el.innerHTML = ''; return; }
+  if (!l.hasTrendChart || !TS || !TS.years || MODE === 'confronto') { el.classList.remove('show'); el.innerHTML = ''; return; }
+  const isAnomaly = l.id === 'anomaly_estate';
 
   let idxs, scope, isSingle = false;
   if (hoverId) {
@@ -1328,31 +1488,44 @@ function renderBivTrendChart(hoverId) {
 
   const years = TS.years;
   const vals = years.map(y => {
-    const per = TS.periods[`${y}-01`];
-    if (!per) return 0;
+    const per = TS.periods[trendYearKey(l, y)];
+    if (!per || !idxs.length) return 0;
+    if (isAnomaly) {
+      const arr = anomalyZMode ? per.z : per.anomaly;
+      if (!arr) return 0;
+      return idxs.reduce((s, i) => s + (arr[i] || 0), 0) / idxs.length;
+    }
     return idxs.reduce((s, i) => s + (per.vy[i] || 0), 0);
   });
-  const max = Math.max(1, ...vals);
+  const maxV = Math.max(isAnomaly ? 0 : 1, ...vals);
+  const minV = Math.min(0, ...vals);
+  const range = Math.max(maxV - minV, 1e-6);
   const { l: padL, r: padR, t: padT, b: padB } = BIV_TREND_PAD;
   const w = BIV_TREND_W, h = BIV_TREND_H, plotW = BIV_TREND_PLOT_W, plotH = BIV_TREND_PLOT_H;
   const n = vals.length;
   const pts = vals.map((v, i) => {
     const x = padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
-    const y = padT + plotH - (v / max) * plotH;
+    const y = padT + plotH - ((v - minV) / range) * plotH;
     return [x, y];
   });
+  const baseY = padT + plotH - ((0 - minV) / range) * plotH;
   const linePath = pts.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt[0].toFixed(1)},${pt[1].toFixed(1)}`).join(' ');
-  const areaPath = `${linePath} L${pts[pts.length - 1][0].toFixed(1)},${(padT + plotH).toFixed(1)} L${pts[0][0].toFixed(1)},${(padT + plotH).toFixed(1)} Z`;
+  const areaPath = `${linePath} L${pts[pts.length - 1][0].toFixed(1)},${baseY.toFixed(1)} L${pts[0][0].toFixed(1)},${baseY.toFixed(1)} Z`;
   const dots = pts.map(([x, y], i) => {
     const isCur = MODE === 'livello' && selYear !== 'clima' && Number(selYear) === years[i];
     return `<circle class="biv-trend-dot${isCur ? ' cur' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isCur ? 3 : 1.6}"/>`;
   }).join('');
+  const zeroLine = isAnomaly ? `<line class="biv-trend-zero" x1="${padL}" x2="${w - padR}" y1="${baseY.toFixed(1)}" y2="${baseY.toFixed(1)}"/>` : '';
 
-  const unitLbl = isSingle ? (l.yUnit || '') : `${l.yUnit || ''} tot.`.trim();
+  const unitLbl = isAnomaly ? (anomalyZMode ? 'σ' : '°C') : (isSingle ? (l.yUnit || '') : `${l.yUnit || ''} tot.`.trim());
+  const fieldLabel = isAnomaly ? 'anomalia estiva' : l.fieldY.toLowerCase();
+  const aggWord = isAnomaly ? ' media' : (isSingle ? '' : ' totale');
+  const valDec = isAnomaly ? 2 : 0;
   el.classList.add('show');
-  el.innerHTML = `<div class="biv-trend-title">Andamento ${esc(l.fieldY.toLowerCase())}${isSingle ? '' : ' totale'}, ${esc(scope)} ${years[0]}-${years[years.length - 1]}</div>
+  el.innerHTML = `<div class="biv-trend-title">Andamento ${esc(fieldLabel)}${aggWord}, ${esc(scope)} ${years[0]}-${years[years.length - 1]}</div>
 <div class="biv-trend-svg-wrap">
 <svg class="biv-trend-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+  ${zeroLine}
   <path class="biv-trend-area" d="${areaPath}"/>
   <path class="biv-trend-line" d="${linePath}"/>
   ${dots}
@@ -1380,7 +1553,7 @@ function renderBivTrendChart(hoverId) {
     guideEl.setAttribute('x1', px); guideEl.setAttribute('x2', px);
     hoverDotEl.setAttribute('cx', px); hoverDotEl.setAttribute('cy', py);
     guideEl.style.opacity = 1; hoverDotEl.style.opacity = 1;
-    ttEl.textContent = `${years[idx]}: ${fmt(vals[idx], 0)}${unitLbl ? ' ' + unitLbl : ''}`;
+    ttEl.textContent = `${years[idx]}: ${fmt(vals[idx], valDec)}${unitLbl ? ' ' + unitLbl : ''}`;
     const ttLeftPct = px / w;
     ttEl.style.left = (ttLeftPct * 100) + '%';
     ttEl.style.top = ((py / h) * rect.height) + 'px';
@@ -1407,12 +1580,15 @@ function showInfo(p) {
       ['Significatività precip.', sigTxt(p.precip_sig)],
     ].map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   } else {
-    const rows = [[l.fieldX, fmt(p.vx, l.xDec) + ` ${l.xUnit}`]];
+    const unit = l.singleVar && anomalyZMode ? 'σ' : l.xUnit;
+    const rows = [[l.fieldX, fmt(p.vx, l.xDec) + ` ${unit}`]];
     if (l.hasMinMax) {
       rows.push([`${l.fieldXBase} max`, fmt(p.tmax, l.xDec) + ` ${l.xUnit}`]);
       rows.push([`${l.fieldXBase} min`, fmt(p.tmin, l.xDec) + ` ${l.xUnit}`]);
     }
-    rows.push([l.fieldY, fmt(p.vy, l.yDec != null ? l.yDec : 0) + ' ' + (l.yUnit != null ? l.yUnit : 'mm')]);
+    if (!l.singleVar) {
+      rows.push([l.fieldY, fmt(p.vy, l.yDec != null ? l.yDec : 0) + ' ' + (l.yUnit != null ? l.yUnit : 'mm')]);
+    }
     document.getElementById('i-table').innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);
@@ -1497,6 +1673,32 @@ function stopPlay() {
   document.getElementById('tl-play').classList.remove('active');
 }
 
+let introPlayed = false;
+async function runIntroAnimation() {
+  // sessionStorage, non hasUrlHash: MapLibre (hash:true) riscrive l'hash in URL ad ogni
+  // caricamento, quindi un controllo su hasUrlHash escluderebbe quasi ogni visita reale dopo
+  // la primissima. sessionStorage fa scattare la reveal una volta per scheda/sessione, non ad
+  // ogni ricarica, senza dipendere dall'hash scritto dalla mappa stessa.
+  if (introPlayed || sessionStorage.getItem('introPlayed')) return;
+  introPlayed = true;
+  sessionStorage.setItem('introPlayed', '1');
+  await switchLayer('anomaly_estate');
+  setPeriod('clima', 'annua');
+  const years = TS.years;
+  const step = Math.max(1, Math.ceil(years.length / 9));
+  const sample = [];
+  for (let i = 0; i < years.length; i += step) sample.push(years[i]);
+  if (sample[sample.length - 1] !== years[years.length - 1]) sample.push(years[years.length - 1]);
+  sample.push('recent'); // chiude sul confronto esplicito 2020-2025 vs baseline
+  document.getElementById('tl-play').classList.add('active');
+  let idx = 0;
+  playTimer = setInterval(() => {
+    setPeriod(String(sample[idx]), 'annua');
+    idx++;
+    if (idx >= sample.length) stopPlay();
+  }, 400);
+}
+
 function setupInfoModal() {
   const overlay = document.getElementById('info-overlay');
   const wrap = document.getElementById('info-wrap');
@@ -1552,10 +1754,10 @@ function setupToolbar() {
       ['case', ['boolean', ['feature-state', 'match'], true], v / 100, 0]);
   });
 
-  document.getElementById('tl-prev').addEventListener('click', () => stepYear(-1));
-  document.getElementById('tl-next').addEventListener('click', () => stepYear(1));
-  document.getElementById('tl-mese-prev').addEventListener('click', () => stepMonth(-1));
-  document.getElementById('tl-mese-next').addEventListener('click', () => stepMonth(1));
+  document.getElementById('tl-prev').addEventListener('click', () => { stopPlay(); stepYear(-1); });
+  document.getElementById('tl-next').addEventListener('click', () => { stopPlay(); stepYear(1); });
+  document.getElementById('tl-mese-prev').addEventListener('click', () => { stopPlay(); stepMonth(-1); });
+  document.getElementById('tl-mese-next').addEventListener('click', () => { stopPlay(); stepMonth(1); });
 
   document.getElementById('tl-play').addEventListener('click', function () {
     if (playTimer) { stopPlay(); return; }

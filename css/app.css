@@ -126,6 +126,12 @@ body.panel-closed #br-stack { right: 20px; }
 .biv-cell:hover { filter: brightness(1.12); z-index: 2; position: relative; }
 .biv-cell.active { border-color: var(--text); box-shadow: 0 0 10px rgba(0,0,0,.6); z-index: 3; position: relative; }
 
+.biv-diamond.single-var {
+  position: static; transform: none; width: 100%; height: 34px;
+  display: flex; grid-template-columns: none; grid-template-rows: none;
+}
+.biv-diamond.single-var .biv-cell { flex: 1; border-radius: 3px; }
+
 .biv-diag-lbl {
   position: absolute; top: 102px; font-size: 10px; font-weight: 700;
   color: var(--text2); text-transform: uppercase; letter-spacing: .04em;
@@ -231,6 +237,7 @@ body.panel-closed #br-stack { right: 20px; }
 .biv-trend-dot.cur { fill: #7a2020; r: 3; }
 .biv-trend-lbl { font-size: 7px; fill: var(--text2); }
 .biv-trend-guide { stroke: var(--text2); stroke-width: 0.6; stroke-dasharray: 2 2; opacity: 0; pointer-events: none; }
+.biv-trend-zero { stroke: var(--border); stroke-width: 0.6; stroke-dasharray: 1.5 1.5; }
 .biv-trend-hover-dot { fill: #fff; stroke: #7a2020; stroke-width: 1.4; opacity: 0; pointer-events: none; }
 .biv-trend-tt {
   position: absolute; opacity: 0; pointer-events: none; white-space: nowrap;
@@ -600,6 +607,38 @@ body.layer-pf #mode-toggle {
 }
 body.layer-pf #fire-metric-toggle {
   display: flex;
+}
+
+body.layer-anomaly #mode-toggle {
+  display: none;
+}
+#anomaly-z-toggle {
+  display: none;
+}
+body.layer-anomaly #anomaly-z-toggle {
+  display: block;
+  font-size: 11px;
+  color: var(--text2);
+  margin: 8px 0;
+}
+body.layer-anomaly .tl-row-months {
+  display: none;
+}
+body.layer-anomaly #biv-diag-lbl-y {
+  display: none;
+}
+body.layer-anomaly #biv-diag-lbl-x {
+  position: static; transform: none; text-align: center;
+  display: block; margin-top: 6px; white-space: normal;
+}
+body.layer-anomaly .biv-diamond-wrap {
+  height: auto;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 4px 0;
+}
+body.layer-anomaly #stat-precip-item {
+  display: none;
 }
 
 .fire-metric-toggle {
