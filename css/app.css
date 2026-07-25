@@ -566,3 +566,33 @@ body.layer-pf #fire-metric-toggle {
   border-color: transparent;
 }
 
+#map-loader {
+  position: absolute;
+  top: 0; left: 0; right: var(--panel-w); bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 14px;
+  transition: opacity 0.3s ease;
+}
+#map-loader.map-loader-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.map-loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(79, 131, 166, 0.25);
+  border-top-color: #4f83a6;
+  border-radius: 50%;
+  animation: map-loader-spin 0.8s linear infinite;
+}
+@keyframes map-loader-spin {
+  to { transform: rotate(360deg); }
+}
+

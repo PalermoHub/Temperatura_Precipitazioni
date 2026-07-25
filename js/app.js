@@ -5,7 +5,7 @@
    Selettore Anno/Mese: ricolora con i dati di quel periodo specifico, classificando
    sempre sulle soglie fisse (quintili, griglia 5×5) della climatologia 1950-2025 per restare comparabile. */
 
-const REMOTE_PMTILES = 'dati/comuni.pmtiles';
+const REMOTE_PMTILES = 'https://palermohub.github.io/Temperatura_Precipitazioni/dati/comuni.pmtiles';
 const SOURCE_LAYER = 'comuni';
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
@@ -453,7 +453,7 @@ async function init() {
   setupCompareDivider();
   updateLayerChrome();
 
-  map.on('load', () => {
+  const setupComuniLayers = () => {
     map.addSource('comuni', {
       type: 'vector',
       url: `pmtiles://${REMOTE_PMTILES}`,
@@ -490,11 +490,21 @@ async function init() {
       paint: { 'line-color': '#ffffff', 'line-width': 2 },
     });
 
+    let loaderHidden = false;
     map.on('sourcedata', e => {
-      if (e.sourceId === 'comuni' && e.isSourceLoaded) applyFeatureState();
+      if (e.sourceId === 'comuni' && e.isSourceLoaded) {
+        applyFeatureState();
+        if (!loaderHidden) {
+          loaderHidden = true;
+          document.getElementById('map-loader')?.classList.add('map-loader-hidden');
+        }
+      }
     });
     setupHover();
-  });
+  };
+
+  if (map.loaded()) setupComuniLayers();
+  else map.on('load', setupComuniLayers);
 }
 
 const MESI_ABBR = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
