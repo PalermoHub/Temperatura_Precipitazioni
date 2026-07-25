@@ -30,11 +30,11 @@ const RANK_COLORS = {
   freddo: '#3b7dd8', // blu freddo
 };
 
-function buildPalette(corners) {
+function buildPalette(corners, n = 5) {
   const pal = {};
-  for (let tx = 1; tx <= 5; tx++) {
-    for (let ty = 1; ty <= 5; ty++) {
-      const u = (tx - 1) / 4, v = (ty - 1) / 4;
+  for (let tx = 1; tx <= n; tx++) {
+    for (let ty = 1; ty <= n; ty++) {
+      const u = (tx - 1) / (n - 1), v = (ty - 1) / (n - 1);
       const rgb = [0, 1, 2].map(i => {
         const top = corners.coldLo[i] * (1 - u) + corners.hotLo[i] * u;
         const bot = corners.coldHi[i] * (1 - u) + corners.hotHi[i] * u;
@@ -222,22 +222,32 @@ let MODE = 'livello';     // 'livello' | 'trend'
 let TREND_STATS = null;   // trend OLS 1950-2025: id, nome, prov, vx(=°C/decennio), vy(=mm/decennio), temp_p, precip_p, temp_sig, precip_sig, biv
 let TREND_BY_ID = {};
 let BREAKS_X_TR = [], BREAKS_Y_TR = [];
+// terzili: solo per il colore mappa (colore poligoni), la classificazione testuale/legenda/ranking resta su quintili
+let BREAKS_X3 = [], BREAKS_Y3 = [], BREAKS_X3_TR = [], BREAKS_Y3_TR = [];
+let PAL3 = {};
 
 const fmt = (v, d = 1) => v == null ? '—' : Number(v).toLocaleString('it-IT', { maximumFractionDigits: d });
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-function classify5(val, breaks) {
+function classifyN(val, breaks, n) {
   if (val == null) return null;
   for (let i = 0; i < breaks.length; i++) if (val <= breaks[i]) return i + 1;
-  return 5;
+  return n;
 }
+function classify5(val, breaks) { return classifyN(val, breaks, 5); }
+// terzili: usati solo per il colore mappa (biv-diamond/testo restano su quintili classify5)
+function classify3(val, breaks) { return classifyN(val, breaks, 3); }
 
-function quintileBreaks(values) {
+function quantileBreaks(values, n) {
   const sorted = values.filter(v => v != null).slice().sort((a, b) => a - b);
-  const n = sorted.length;
-  const q = p => sorted[Math.min(n - 1, Math.floor(p * n))];
-  return [q(0.2), q(0.4), q(0.6), q(0.8)];
+  const len = sorted.length;
+  const q = p => sorted[Math.min(len - 1, Math.floor(p * len))];
+  const breaks = [];
+  for (let i = 1; i < n; i++) breaks.push(q(i / n));
+  return breaks;
 }
+function quintileBreaks(values) { return quantileBreaks(values, 5); }
+function terzileBreaks(values) { return quantileBreaks(values, 3); }
 
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -346,16 +356,25 @@ async function loadLayerData(id) {
   const newBreaksY = quintileBreaks(yValuesForBreaks);
   const newBreaksXTr = quintileBreaks(newTrendStats.map(p => p.vx));
   const newBreaksYTr = quintileBreaks(newTrendStats.map(p => p.vy));
+  // terzili: stesse basi statistiche, soglie a 2 tagli invece di 4 (solo per il colore mappa)
+  const newBreaksX3 = terzileBreaks(newBaseStats.map(p => p.vx));
+  const newBreaksY3 = terzileBreaks(yValuesForBreaks);
+  const newBreaksX3Tr = terzileBreaks(newTrendStats.map(p => p.vx));
+  const newBreaksY3Tr = terzileBreaks(newTrendStats.map(p => p.vy));
   const newTrendById = {};
   newTrendStats.forEach(p => {
     const cx = classify5(p.vx, newBreaksXTr), cy = classify5(p.vy, newBreaksYTr);
     p.biv = (cx && cy) ? `${cx}-${cy}` : null;
+    const cx3 = classify3(p.vx, newBreaksX3Tr), cy3 = classify3(p.vy, newBreaksY3Tr);
+    p.bivMap = (cx3 && cy3) ? `${cx3}-${cy3}` : null;
     newTrendById[p.id] = p;
   });
 
   const pal = buildPalette(cfg.corners);
+  const pal3 = buildPalette(cfg.corners, 3);
   if (cfg.zeroColor) {
     for (let tx = 1; tx <= 5; tx++) pal[`${tx}-0`] = cfg.zeroColor;
+    for (let tx = 1; tx <= 3; tx++) pal3[`${tx}-0`] = cfg.zeroColor;
   }
 
   const data = {
@@ -363,7 +382,9 @@ async function loadLayerData(id) {
     TREND_STATS: newTrendStats, TREND_BY_ID: newTrendById,
     BREAKS_X: newBreaksX, BREAKS_Y: newBreaksY,
     BREAKS_X_TR: newBreaksXTr, BREAKS_Y_TR: newBreaksYTr,
-    PAL: pal,
+    BREAKS_X3: newBreaksX3, BREAKS_Y3: newBreaksY3,
+    BREAKS_X3_TR: newBreaksX3Tr, BREAKS_Y3_TR: newBreaksY3Tr,
+    PAL: pal, PAL3: pal3,
   };
   layerCache[id] = data;
   return data;
@@ -374,7 +395,9 @@ function applyLayerData(data) {
   TS = data.TS; TREND_STATS = data.TREND_STATS; TREND_BY_ID = data.TREND_BY_ID;
   BREAKS_X = data.BREAKS_X; BREAKS_Y = data.BREAKS_Y;
   BREAKS_X_TR = data.BREAKS_X_TR; BREAKS_Y_TR = data.BREAKS_Y_TR;
-  PAL = data.PAL;
+  BREAKS_X3 = data.BREAKS_X3; BREAKS_Y3 = data.BREAKS_Y3;
+  BREAKS_X3_TR = data.BREAKS_X3_TR; BREAKS_Y3_TR = data.BREAKS_Y3_TR;
+  PAL = data.PAL; PAL3 = data.PAL3;
 }
 
 function updateLayerChrome() {
@@ -619,12 +642,15 @@ function buildEntry(id, vx, vy, tmax, tmin) {
   const l = LAYERS[activeLayer];
   const cls_x = classify5(vx, BREAKS_X);
   const cls_y = (l.zeroClassY && vy === 0) ? 0 : classify5(vy, BREAKS_Y);
+  const cls_x3 = classify3(vx, BREAKS_X3);
+  const cls_y3 = (l.zeroClassY && vy === 0) ? 0 : classify3(vy, BREAKS_Y3);
   return {
     id, nome: base.nome, prov: base.prov,
     vx: vx != null ? +vx.toFixed(2) : null,
     vy: vy != null ? +vy.toFixed(1) : null,
     tmax, tmin,
     biv: (cls_x && cls_y != null) ? `${cls_x}-${cls_y}` : null,
+    bivMap: (cls_x3 && cls_y3 != null) ? `${cls_x3}-${cls_y3}` : null,
   };
 }
 
@@ -874,7 +900,8 @@ function applyFeatureState() {
     const matchComune = !activeComune || p.id === activeComune;
     map.setFeatureState(
       { source: 'comuni', sourceLayer: SOURCE_LAYER, id },
-      { color: PAL[p.biv] || '#888', match: matchProv && matchBiv && matchComune }
+      // colore poligono su griglia 3×3 (terzili); legenda/filtro/testo restano su quintili (p.biv)
+      { color: PAL3[p.bivMap] || '#888', match: matchProv && matchBiv && matchComune }
     );
   });
 }

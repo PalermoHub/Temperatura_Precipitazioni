@@ -206,7 +206,7 @@ function applyMap2FeatureState() {
     const matchComune = !activeComune || p.id === activeComune;
     map2.setFeatureState(
       { source: 'comuni', sourceLayer: SOURCE_LAYER, id },
-      { color: PAL[p.biv] || '#888', match: matchProv && matchComune }
+      { color: PAL3[p.bivMap] || '#888', match: matchProv && matchComune }
     );
   });
 }
