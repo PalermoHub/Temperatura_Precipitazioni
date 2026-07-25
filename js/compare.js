@@ -51,6 +51,7 @@ function buildCompareSelects() {
     el.innerHTML = h;
     const active = el.querySelector('.active');
     if (active) active.scrollIntoView({ block: 'center' });
+    updateWheelTilt(el.parentElement);
   }
   fillYearList(document.getElementById('cmp-a-from'), CMP_DEFAULT_A.from);
   fillYearList(document.getElementById('cmp-a-to'), CMP_DEFAULT_A.to);
@@ -59,7 +60,9 @@ function buildCompareSelects() {
 
   let hm = `<div class="tl-item active" data-month="annua">Annua</div>`;
   MESI.forEach((m, i) => { hm += `<div class="tl-item" data-month="${i + 1}">${m}</div>`; });
-  document.getElementById('cmp-month').innerHTML = hm;
+  const monthEl = document.getElementById('cmp-month');
+  monthEl.innerHTML = hm;
+  updateWheelTilt(monthEl.parentElement);
 }
 
 function getCmpValue(id, attr) {

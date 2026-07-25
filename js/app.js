@@ -618,6 +618,45 @@ async function init() {
 const MESI_ABBR = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 let playTimer = null;
 
+/* ── Effetto "ruota 3D" sui selettori a pillole (.tl-scroll-wrap / .cmp-scroll-wrap) ──
+   Inclina ogni .tl-item in base alla distanza dal centro del contenitore, per dare
+   il senso di rotazione verticale (come un picker in stile iOS). */
+const WHEEL_MAX_ANGLE = 42; // gradi di rotazione X al bordo del contenitore
+const WHEEL_MAX_DEPTH = 16; // px di arretramento (translateZ) al bordo
+
+function updateWheelTilt(wrap) {
+  if (!wrap) return;
+  const scroller = wrap.firstElementChild;
+  if (!scroller) return;
+  const wrapRect = wrap.getBoundingClientRect();
+  if (!wrapRect.height) return; // contenitore nascosto (display:none)
+  const centerY = wrapRect.top + wrapRect.height / 2;
+  const half = wrapRect.height / 2;
+  for (const item of scroller.children) {
+    const r = item.getBoundingClientRect();
+    const norm = Math.max(-1, Math.min(1, (r.top + r.height / 2 - centerY) / half));
+    const angle = norm * WHEEL_MAX_ANGLE;
+    const scale = 1 - Math.abs(norm) * 0.16;
+    item.style.transform = `translateZ(${-Math.abs(norm) * WHEEL_MAX_DEPTH}px) rotateX(${angle}deg) scale(${scale})`;
+    item.style.opacity = (1 - Math.abs(norm) * 0.55).toFixed(2);
+  }
+}
+
+function initWheelScrolls(root = document) {
+  root.querySelectorAll('.tl-scroll-wrap, .cmp-scroll-wrap').forEach(updateWheelTilt);
+}
+
+(() => {
+  let raf = null;
+  document.addEventListener('scroll', e => {
+    const wrap = e.target.closest && e.target.closest('.tl-scroll-wrap, .cmp-scroll-wrap');
+    if (!wrap) return;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => updateWheelTilt(wrap));
+  }, true);
+  window.addEventListener('resize', () => initWheelScrolls());
+})();
+
 let timelineListenersAttached = false;
 
 function buildTimeline() {
@@ -634,6 +673,9 @@ function buildTimeline() {
   let hm = `<div class="tl-item" data-month="annua">Annua</div>`;
   MESI_ABBR.forEach((m, i) => { hm += `<div class="tl-item" data-month="${i + 1}">${m}</div>`; });
   months.innerHTML = hm;
+
+  updateWheelTilt(years.parentElement);
+  updateWheelTilt(months.parentElement);
 
   if (timelineListenersAttached) return;
   timelineListenersAttached = true;
@@ -662,6 +704,8 @@ function syncTimelineUI() {
   if (activeYear) activeYear.scrollIntoView({ block: 'center', inline: 'nearest' });
   const activeMonth = document.querySelector('#tl-months .tl-item.active');
   if (activeMonth) activeMonth.scrollIntoView({ block: 'center', inline: 'nearest' });
+  updateWheelTilt(document.getElementById('tl-years').parentElement);
+  updateWheelTilt(document.getElementById('tl-months').parentElement);
 }
 
 function setPeriod(year, month) {
@@ -1660,6 +1704,7 @@ function setMode(mode) {
   MODE = mode;
   document.body.classList.toggle('mode-trend', mode === 'trend');
   document.body.classList.toggle('mode-confronto', mode === 'confronto');
+  if (mode === 'confronto') requestAnimationFrame(() => initWheelScrolls());
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
   const l = LAYERS[activeLayer];
   document.getElementById('panel-title').textContent =

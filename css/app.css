@@ -423,14 +423,16 @@ body.panel-closed #geo-search-area { left: 50%; }
   overflow-y: auto; overflow-x: hidden; flex-shrink: 0;
   scrollbar-width: none; scroll-behavior: smooth;
   max-height: 84px; /* ~3 item da .tl-item (24px + 4px gap) */
+  perspective: 220px; /* profondita' per l'effetto ruota 3D degli item */
 }
 .tl-row-months .tl-scroll-wrap { max-height: 96px; /* ~4 item da .tl-row-months .tl-item */ }
 .tl-scroll-wrap::-webkit-scrollbar { display: none; }
-.tl-scroll { display: flex; flex-direction: column; gap: 4px; height: max-content; }
+.tl-scroll { display: flex; flex-direction: column; gap: 4px; height: max-content; transform-style: preserve-3d; }
 .tl-item {
   padding: 2px 4px; border-radius: 12px; font-size: 11px; font-weight: 600;
-  color: var(--text2); cursor: pointer; white-space: nowrap; transition: all .15s;
+  color: var(--text2); cursor: pointer; white-space: nowrap; transition: background .15s, color .15s, transform .12s ease-out, opacity .12s ease-out;
   border: 1px solid transparent; text-align: center;
+  transform-style: preserve-3d; will-change: transform;
 }
 .tl-item:hover { background: var(--bg3); color: var(--text); }
 .tl-item.active { background: var(--accent); color: #fff; }
@@ -515,6 +517,7 @@ body.mode-confronto #compare-panel { display: block; }
   overflow-y: auto; overflow-x: hidden; scrollbar-width: none; scroll-behavior: smooth;
   border: 1px solid var(--border); border-radius: 10px; padding: 3px;
   background: var(--bg3);
+  perspective: 220px; /* profondita' per l'effetto ruota 3D degli item */
 }
 .cmp-scroll-wrap::-webkit-scrollbar { display: none; }
 .cmp-scroll-wrap-month { width: 100%; max-height: 84px; /* stessa altezza delle colonne anno */ }
