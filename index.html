@@ -81,6 +81,9 @@
   <button id="tb-theme" title="Tema chiaro/scuro">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
   </button>
+  <button id="tb-embed" title="Copia codice embed (iframe)">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6"/><path d="m16 6 6 6-6 6"/></svg>
+  </button>
   <div class="tb-sep"></div>
   <input type="range" id="tb-opacity" min="0" max="100" value="82" title="Opacità riempimento"/>
   <span id="tb-opacity-val">82</span>
@@ -476,6 +479,15 @@
         <hr class="analisi-sep">
         <p class="info-text">Web app progettata e sviluppata da <a href="https://www.linkedin.com/in/gbvitrano/" target="_blank" rel="noopener" class="mi-link">@gbvitrano</a> per <a href="https://opendatasicilia.it/" target="_blank" rel="noopener" class="mi-link">OpenDataSicilia.it</a>, in collaborazione con <a href="https://claude.ai" target="_blank" rel="noopener" class="mi-link">Claude AI (Anthropic)</a>.</p>
         <p class="info-text">La mappa usa <b>MapLibre GL JS</b> e <b>PMTiles</b>, formato vettoriale che permette di caricare solo i tile visibili senza server backend: veloce, leggera e ospitabile su hosting statico.</p>
+        <hr class="analisi-sep">
+        <div class="info-row">
+          <strong>Dataset scaricabile</strong><br>
+          Dati clima e incendi per comune (391 comuni), formato CSV/GeoJSON con schema documentato, pronti per riuso in altri progetti.<br>
+          <a href="output/sicilia_clima_export.csv" download title="Scarica CSV">⬇ CSV</a> ·
+          <a href="output/sicilia_clima_export.geojson" download title="Scarica GeoJSON">⬇ GeoJSON</a> ·
+          <a href="output/SCHEMA.md" target="_blank" rel="noopener" title="Schema campi">Schema</a> ·
+          <a href="README.md" target="_blank" rel="noopener" title="README progetto">README</a>
+        </div>
         <hr class="analisi-sep">
         <p class="info-text">I contenuti sono rilasciati sotto licenza <a href="https://creativecommons.org/licenses/by/4.0/deed.it" target="_blank" rel="noopener"><strong>CC BY 4.0 – Attribuzione 4.0 Internazionale</strong></a>. Sei libero di condividere e adattare il materiale per qualsiasi scopo, anche commerciale, citando adeguatamente la fonte.</p>
       </div>

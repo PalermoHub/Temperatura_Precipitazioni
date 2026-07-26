@@ -147,10 +147,17 @@ function setupToolbar() {
     map.flyTo({ center: [14.15, 37.6], zoom: 7.2 });
   });
 
-  document.getElementById('tb-fullscreen').addEventListener('click', function () {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-    else document.exitFullscreen();
-  });
+  const fullscreenBtn = document.getElementById('tb-fullscreen');
+  // In iframe senza attributo allow="fullscreen" l'API e' disabilitata: requestFullscreen()
+  // lancerebbe un'eccezione non gestita. Nascondiamo il bottone in quel caso (embed).
+  if (!document.fullscreenEnabled) {
+    fullscreenBtn.style.display = 'none';
+  } else {
+    fullscreenBtn.addEventListener('click', function () {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else document.exitFullscreen();
+    });
+  }
   document.addEventListener('fullscreenchange', () => {
     document.getElementById('tb-fullscreen').classList.toggle('active', !!document.fullscreenElement);
   });
@@ -162,6 +169,25 @@ function setupToolbar() {
     if (map.getLayer('basemap')) map.removeLayer('basemap');
     const beforeId = map.getLayer('comuni-fill') ? 'comuni-fill' : undefined;
     map.addLayer({ id: 'basemap', type: 'raster', source }, beforeId);
+  });
+
+  const embedBtn = document.getElementById('tb-embed');
+  embedBtn.addEventListener('click', async () => {
+    const url = `${location.origin}${location.pathname}`;
+    const snippet = `<iframe src="${url}" width="100%" height="640" style="border:0" allow="fullscreen" loading="lazy"></iframe>`;
+    try {
+      await navigator.clipboard.writeText(snippet);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = snippet; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    const original = embedBtn.title;
+    embedBtn.title = 'Copiato!';
+    embedBtn.classList.add('active');
+    setTimeout(() => { embedBtn.title = original; embedBtn.classList.remove('active'); }, 1500);
   });
 
   const opacitySlider = document.getElementById('tb-opacity');
