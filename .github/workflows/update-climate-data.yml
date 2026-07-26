@@ -46,18 +46,20 @@ jobs:
       - name: Ricostruisci serie storica mensile
         run: python3 scripts/build_timeseries.py
 
-      # 2.6 — ricalcola i trend OLS con il punto dati aggiuntivo
-      - name: Ricalcola trend climatico
-        run: python3 scripts/compute_trend.py
-
       # 2.8 — ricalcola PDSI (i conteggi incendio restano quelli dell'ultimo censimento SIF disponibile:
       # non esiste una fonte automatizzabile, va aggiornato manualmente quando la Regione pubblica nuovi dati)
       - name: Ricostruisci serie PDSI × incendi
         run: python3 scripts/build_pdsi_incendi_timeseries.py
 
-      # 2.9 — ricalcola anomalia estiva con l'anno/mese corrente
+      # 2.9 — ricalcola anomalia estiva con l'anno/mese corrente (scrive un placeholder
+      # vuoto per il trend, va rigenerato dopo da compute_trend.py)
       - name: Ricalcola anomalia estiva
         run: python3 scripts/build_anomaly_estate.py
+
+      # 2.6 — ricalcola i trend OLS con il punto dati aggiuntivo (deve girare DOPO
+      # build_anomaly_estate.py: quello scrive un placeholder vuoto per il suo trend file)
+      - name: Ricalcola trend climatico
+        run: python3 scripts/compute_trend.py
 
       # Export dataset standalone per distribuzione (CSV/GeoJSON + schema)
       - name: Rigenera dataset di distribuzione
