@@ -1,0 +1,11 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="antimeridian_adjusted_bounds">6.626621,35.493451,18.520382,47.091553</MDI>
+    <MDI key="format">pbf</MDI>
+    <MDI key="generator">tippecanoe v2.53.0</MDI>
+    <MDI key="generator_options">tippecanoe -Z 4 -z 11 -o comuni.pmtiles comuni.geojson</MDI>
+    <MDI key="name">comuni.pmtiles</MDI>
+    <MDI key="type">overlay</MDI>
+    <MDI key="version">2</MDI>
+  </Metadata>
+</PAMDataset>

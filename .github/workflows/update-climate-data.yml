@@ -1,0 +1,76 @@
+name: Aggiorna dati climatici mensili
+
+on:
+  schedule:
+    # 03:00 UTC del giorno 1 di ogni mese
+    - cron: "0 3 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-climate-data
+  cancel-in-progress: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Installa dipendenze
+        run: pip install -r requirements.txt
+
+      # 2.1 — scarica l'ultima serie TerraClimate disponibile (append mesi nuovi)
+      - name: Scarica dati climatici grezzi (TerraClimate)
+        run: python3 scripts/download_terraclimate_sicilia.py
+
+      # 2.3 — ricalcola climatologia (medie 1950-oggi) sui confini comunali già presenti
+      - name: Statistiche zonali comuni
+        run: python3 scripts/zonal_stats_comuni.py
+
+      # 2.4 — ricalcola classi bivariate (livello) con le nuove medie
+      - name: Genera dati bivariati
+        run: python3 scripts/make_bivariate_sicilia.py
+
+      # 2.5 — estende la serie mensile con i mesi nuovi
+      - name: Ricostruisci serie storica mensile
+        run: python3 scripts/build_timeseries.py
+
+      # 2.6 — ricalcola i trend OLS con il punto dati aggiuntivo
+      - name: Ricalcola trend climatico
+        run: python3 scripts/compute_trend.py
+
+      # 2.8 — ricalcola PDSI (i conteggi incendio restano quelli dell'ultimo censimento SIF disponibile:
+      # non esiste una fonte automatizzabile, va aggiornato manualmente quando la Regione pubblica nuovi dati)
+      - name: Ricostruisci serie PDSI × incendi
+        run: python3 scripts/build_pdsi_incendi_timeseries.py
+
+      # 2.9 — ricalcola anomalia estiva con l'anno/mese corrente
+      - name: Ricalcola anomalia estiva
+        run: python3 scripts/build_anomaly_estate.py
+
+      # Export dataset standalone per distribuzione (CSV/GeoJSON + schema)
+      - name: Rigenera dataset di distribuzione
+        run: python3 scripts/export_dataset.py
+
+      - name: Commit e push se ci sono modifiche
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dati/ data/processed/comuni_sicilia_clima.csv output/
+          if git diff --cached --quiet; then
+            echo "Nessuna modifica ai dati, skip commit."
+          else
+            git commit -m "chore: aggiornamento automatico dati climatici $(date -u +%Y-%m)"
+            git push
+          fi
