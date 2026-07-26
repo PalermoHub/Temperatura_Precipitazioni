@@ -217,6 +217,9 @@ function showInfo(p) {
     if (!l.singleVar) {
       rows.push([l.fieldY, fmt(p.vy, l.yDec != null ? l.yDec : 0) + ' ' + (l.yUnit != null ? l.yUnit : 'mm')]);
     }
+    if (l.hasWind && p.vento != null) {
+      rows.push([l.fieldWind, fmt(p.vento, l.windDec) + ' ' + l.windUnit]);
+    }
     document.getElementById('i-table').innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
   }
   document.getElementById('i-class').innerHTML = buildClassBlock(p.biv);

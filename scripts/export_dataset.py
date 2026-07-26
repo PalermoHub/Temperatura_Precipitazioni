@@ -62,6 +62,7 @@ def main():
             "temp_media_c": float(r["temp_media_c"]),
             "precip_media_mm": float(r["precip_media_mm"]),
             "deficit_media_mm": float(r["def_media_mm"]),
+            "vento_media_ms": float(r["vento_media_ms"]) if r.get("vento_media_ms") not in (None, "") else None,
             "temp_trend_c_decade": t.get("vx"),
             "precip_trend_mm_decade": t.get("vy"),
             "temp_trend_pvalue": t.get("temp_p"),

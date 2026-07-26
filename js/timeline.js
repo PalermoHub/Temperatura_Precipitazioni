@@ -191,7 +191,7 @@ function buildEntry(id, vx, vy, tmax, tmin) {
     id, nome: base.nome, prov: base.prov,
     vx: vx != null ? +vx.toFixed(2) : null,
     vy: vy != null ? +vy.toFixed(1) : null,
-    tmax, tmin,
+    tmax, tmin, vento: base.vento,
     biv: (cls_x && cls_y != null) ? `${cls_x}-${cls_y}` : null,
     bivMap: (cls_x3 && cls_y3 != null) ? `${cls_x3}-${cls_y3}` : null,
   };

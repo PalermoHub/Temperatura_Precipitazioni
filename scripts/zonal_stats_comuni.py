@@ -31,6 +31,10 @@ defv = xr.open_dataarray(f"{RAW}/terraclimate_def_sicilia_1950_2025.nc")
 def_annual_totals = defv.groupby("time.year").sum(dim="time")
 def_media_annua = def_annual_totals.mean(dim="year")
 
+# --- 2c. Velocita' media del vento (ws, m/s) — media di tutti i mesi, come la temperatura ---
+ws = xr.open_dataarray(f"{RAW}/terraclimate_ws_sicilia_1950_2025.nc")
+vento_media_annua = ws.mean(dim="time")
+
 def to_geotiff(da: xr.DataArray, path: str):
     da = da.rio.write_crs("EPSG:4326")
     da = da.rio.write_nodata(np.nan)
@@ -39,6 +43,7 @@ def to_geotiff(da: xr.DataArray, path: str):
 to_geotiff(temp_media_annua, f"{OUT_DIR}/temp_media_annua.tif")
 to_geotiff(precip_media_annua, f"{OUT_DIR}/precip_media_annua.tif")
 to_geotiff(def_media_annua, f"{OUT_DIR}/def_media_mm.tif")
+to_geotiff(vento_media_annua, f"{OUT_DIR}/vento_media_ms.tif")
 
 # --- 3. Zonal stats sui comuni ---
 # all_touched=True: serve per i comuni piccoli/costieri piu' stretti della cella 4km
@@ -47,10 +52,12 @@ comuni = gpd.read_file(COMUNI_PATH)
 stats_temp = zonal_stats(comuni, f"{OUT_DIR}/temp_media_annua.tif", stats="mean", nodata=np.nan, all_touched=True)
 stats_precip = zonal_stats(comuni, f"{OUT_DIR}/precip_media_annua.tif", stats="mean", nodata=np.nan, all_touched=True)
 stats_def = zonal_stats(comuni, f"{OUT_DIR}/def_media_mm.tif", stats="mean", nodata=np.nan, all_touched=True)
+stats_vento = zonal_stats(comuni, f"{OUT_DIR}/vento_media_ms.tif", stats="mean", nodata=np.nan, all_touched=True)
 
 comuni["temp_media_c"] = [s["mean"] for s in stats_temp]
 comuni["precip_media_mm"] = [s["mean"] for s in stats_precip]
 comuni["def_media_mm"] = [s["mean"] for s in stats_def]
+comuni["vento_media_ms"] = [s["mean"] for s in stats_vento]
 
 n_missing = comuni["temp_media_c"].isna().sum()
 print(f"Comuni senza valore (poligono troppo piccolo per la griglia 4km): {n_missing}")

@@ -22,6 +22,7 @@ Genera con: `python3 scripts/export_dataset.py`
 | temp_media_c | float | °C | Temperatura media annua (climatologia 1950-2025) |
 | precip_media_mm | float | mm/anno | Precipitazione media annua |
 | deficit_media_mm | float | mm/anno | Deficit idrico climatico medio annuo (CWD) |
+| vento_media_ms | float | m/s | Velocità media del vento (climatologia 1950-2025) |
 | temp_trend_c_decade | float | °C/decennio | Trend OLS temperatura |
 | precip_trend_mm_decade | float | mm/decennio | Trend OLS precipitazione |
 | temp_trend_pvalue | float | — | p-value trend temperatura |

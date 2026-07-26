@@ -66,7 +66,7 @@ def build_bivariate(var_x, var_y, label_x, label_y, unit_x, unit_y, map_id, suff
     for k in sorted(dist):
         print(f"      {k}: {dist[k]} comuni")
 
-    keep = ["pro_com_t", "comune", "den_uts", var_x, var_y,
+    keep = ["pro_com_t", "comune", "den_uts", var_x, var_y, "vento_media_ms",
             "cls_x", "cls_y", "bivar_lbl", "color", "geometry"]
     out_gdf = gdf[keep].rename(columns={var_x: "val_x", var_y: "val_y"})
     out_gdf = out_gdf.to_crs(4326)
@@ -84,6 +84,7 @@ def build_bivariate(var_x, var_y, label_x, label_y, unit_x, unit_y, map_id, suff
             "biv":  row["bivar_lbl"],
             "vx":   round(float(row["val_x"]), 2) if pd.notna(row["val_x"]) else None,
             "vy":   round(float(row["val_y"]), 2) if pd.notna(row["val_y"]) else None,
+            "vento": round(float(row["vento_media_ms"]), 1) if pd.notna(row["vento_media_ms"]) else None,
         })
 
     out_stats = f"dati/comuni_bivariate{suffix}_stats.json"

@@ -1,4 +1,4 @@
-"""Scarica TerraClimate (ppt, tmax, tmin) ritagliato sulla Sicilia da climatologylab.org (THREDDS)."""
+"""Scarica TerraClimate (ppt, tmax, tmin, def, PDSI, ws) ritagliato sulla Sicilia da climatologylab.org (THREDDS)."""
 
 import xarray as xr
 
@@ -10,7 +10,7 @@ LAT_MIN, LAT_MAX = 35.3, 38.9
 
 OUT_DIR = "data/raw"
 
-VARS = ["ppt", "tmax", "tmin", "def", "PDSI"]
+VARS = ["ppt", "tmax", "tmin", "def", "PDSI", "ws"]
 
 for var in VARS:
     url = BASE.format(var=var)
