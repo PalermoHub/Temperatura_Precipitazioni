@@ -38,6 +38,7 @@ with open(STATS_TP) as f:
     tp_stats = json.load(f)["props"]
 nome_by_id = {p["id"]: p["nome"] for p in tp_stats}
 prov_by_id = {p["id"]: p["prov"] for p in tp_stats}
+vento_by_id = {p["id"]: p.get("vento") for p in tp_stats}
 
 pdsi = xr.open_dataarray(f"{RAW}/terraclimate_PDSI_sicilia_1950_2025.nc")
 
@@ -161,6 +162,7 @@ for fire_field in ("area", "count"):
             "vx": round(vx, 2) if vx is not None else None,
             "vy": round(vy, 2),
             "biv": biv,
+            "vento": vento_by_id.get(cid),
         })
     out_path = f"dati/comuni_bivariate_pf_{fire_field}_stats.json"
     with open(out_path, "w") as f:
