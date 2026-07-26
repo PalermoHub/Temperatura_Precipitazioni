@@ -1781,7 +1781,10 @@ async function runIntroAnimation() {
   playTimer = setInterval(() => {
     setPeriod(String(sample[idx]), 'annua');
     idx++;
-    if (idx >= sample.length) stopPlay();
+    if (idx >= sample.length) {
+      stopPlay();
+      switchLayer('tp').then(() => setPeriod(String(years[years.length - 1]), 'annua'));
+    }
   }, 400);
 }
 
