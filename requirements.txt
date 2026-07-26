@@ -1,0 +1,8 @@
+numpy
+scipy
+pandas
+xarray
+geopandas
+rasterio
+rioxarray
+rasterstats
